@@ -15,10 +15,11 @@ Modify the `.env` file and ad your keys and variables there. Then run the app:
 python app.py
 ```
 
-Open another Terminal
 Go to the root directory of your Next.js project.
 Create a file named .env.local (if it doesn't already exist).
 Add your environment variable, for example: ```NEXT_PUBLIC_API_URL=http://127.0.0.1:5000``` and save the file.
+
+Open another Terminal:
 ```
 cd dblp-nli-app
 npm run dev
