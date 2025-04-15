@@ -1,4 +1,4 @@
-# dblp-nli
+# DBLP-NLI: A natural languge interface for DBLP KG.
 ## How  to run
 
 Run this project by simply following the instructions:
