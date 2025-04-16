@@ -6,10 +6,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
+interface SPARQLResult {
+  head: {
+    vars: string[];
+  };
+  results: {
+    bindings: {
+      [key: string]: {
+        type: string;
+        value: string;
+      };
+    }[];
+  };
+}
+
 export default function SPARQLQueryApp() {
   const [userQuery, setUserQuery] = useState("");
   const [sparqlQuery, setSparqlQuery] = useState("");
-  const [queryResult, setQueryResult] = useState("");
+  const [queryResult, setQueryResult] = useState<SPARQLResult | null>(null);
 
   const exampleQuestions = [
     "What are the papers Ricardo Usbeck published with Debayan Banerjee?",
@@ -37,6 +51,7 @@ export default function SPARQLQueryApp() {
       const data = await response.json();
       setSparqlQuery(data.sparql);
     } catch (error) {
+      console.error("SPARQL generation error:", error);
       toast.error("Error generating SPARQL.");
     }
   };
@@ -51,7 +66,8 @@ export default function SPARQLQueryApp() {
       const data = await response.json();
       setQueryResult(data.sparql_results);
     } catch (error) {
-      toast.error("Error running SPARQL.");
+      console.error("Failed to run SPARQL query:", error);
+      toast.error("Failed to run SPARQL query.");
     }
   };
 
