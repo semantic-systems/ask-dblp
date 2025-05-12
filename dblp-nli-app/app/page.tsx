@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
+import {toast, Toaster} from "sonner";
 
 interface SPARQLResult {
   head: {
@@ -43,12 +43,19 @@ export default function SPARQLQueryApp() {
       return;
     }
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/generate_sparql`, {
+      const response = await fetch('/api/generate_sparql', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: userQuery }),
       });
+
       const data = await response.json();
+
+      if (response.status >= 400) {
+        toast.error(`Error generating SPARQL. (${data.error})`);
+        return;
+      }
+
       setSparqlQuery(data.sparql);
     } catch (error) {
       console.error("SPARQL generation error:", error);
@@ -58,7 +65,7 @@ export default function SPARQLQueryApp() {
 
   const handleRunSPARQL = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/run_sparql`, {
+      const response = await fetch('/api/run_sparql', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: sparqlQuery }),
@@ -140,6 +147,7 @@ export default function SPARQLQueryApp() {
             </CardContent>
           </Card>
         )}
+        <Toaster/>
         </div>
       );
 }

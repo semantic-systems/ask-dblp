@@ -1,6 +1,8 @@
 # Next.js Frontend Dockerfile (dblp-nli/dblp-nli-app/Dockerfile)
 FROM node:18-alpine
 
+ARG API_URL
+
 WORKDIR /app
 
 COPY package*.json ./
