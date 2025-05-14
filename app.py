@@ -20,8 +20,9 @@ def generate_sparql():
     try:
        data = request.json
        user_query = data.get("query", "")
-       sparql_query = llms.question_to_sparql(user_query)
-       return jsonify({"sparql": sparql_query})
+       sparql_query, confidence = llms.question_to_sparql(user_query)
+       return jsonify({"sparql": sparql_query,
+                       "confidence_score": confidence})
     except Exception as e:
        return jsonify({"error": f"An exception occurred: {str(e)}"}), 500
 
