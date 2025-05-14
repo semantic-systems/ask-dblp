@@ -55,8 +55,8 @@ export default function SPARQLQueryApp() {
         toast.error(`Error generating SPARQL. (${data.error})`);
         return;
       }
-
-      setSparqlQuery(data.sparql);
+      let confidence_string = `# Confidence_score: ${data.confidence_score}`;
+      setSparqlQuery(`${confidence_string}\n ${data.sparql}`);
     } catch (error) {
       console.error("SPARQL generation error:", error);
       toast.error("Error generating SPARQL.");
