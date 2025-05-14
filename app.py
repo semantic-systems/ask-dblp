@@ -17,10 +17,13 @@ CORS(app)  # Allow frontend to access backend
 
 @app.route('/generate_sparql', methods=['POST'])
 def generate_sparql():
-   data = request.json
-   user_query = data.get("query", "")
-   sparql_query = llms.question_to_sparql(user_query)
-   return jsonify({"sparql": sparql_query})
+    try:
+       data = request.json
+       user_query = data.get("query", "")
+       sparql_query = llms.question_to_sparql(user_query)
+       return jsonify({"sparql": sparql_query})
+    except Exception as e:
+       return jsonify({"error": f"An exception occurred: {str(e)}"}), 500
 
 
 @app.route('/run_sparql', methods=['POST'])
