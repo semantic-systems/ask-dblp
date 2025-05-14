@@ -6,3 +6,4 @@ langchain
 node
 flask_cors
 python-dotenv
+numpy
