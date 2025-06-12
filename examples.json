@@ -1,0 +1,58 @@
+{
+  "build_sparql": [
+    {
+      "question": "What are the publication types in dblp?",
+      "sparql": "PREFIX dblp: <https://dblp.org/rdf/schema#>\nPREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nSELECT ?type (COUNT(?type) AS ?count) WHERE {\n  ?subject rdf:type dblp:Publication .\n  ?subject rdf:type ?type .\n  FILTER( ?type != dblp:Publication )\n}\nGROUP BY ?type\nORDER BY DESC(?count)"
+    },
+    {
+      "question": "How many authors does the paper entitled NFDI4DS Gateway and Portal have?",
+      "sparql": "PREFIX dblp: <https://dblp.org/rdf/schema#>\nSELECT ?number_of_authors WHERE {\n  ?publ dblp:title ?title .\n  FILTER CONTAINS (?title, \"NFDI4DS Gateway and Portal.\")\n  ?publ dblp:numberOfCreators ?number_of_authors . \n}"
+    },
+    {
+      "question": "How many authors wrote the paper NFDI4DS Gateway and Portal?",
+      "sparql": "PREFIX dblp: <https://dblp.org/rdf/schema#>\nSELECT (COUNT(?author) AS ?numberOfAuthors) WHERE {\n  ?publication dblp:title ?title .\n  FILTER CONTAINS (?title, \"NFDI4DS Gateway and Portal\") .\n  ?publication <https://dblp.org/rdf/schema#authoredBy> ?author .\n}"
+    },
+    {
+      "question": "In which venue was 'Bridge-Generate: Scholarly Hybrid Question Answering' published?",
+      "sparql": "PREFIX dblp: <https://dblp.org/rdf/schema#>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nSELECT * WHERE {\n  ?publication dblp:title ?title .\n  FILTER CONTAINS (?title, \"Bridge-Generate: Scholarly Hybrid Question Answering\") .\n  ?publication dblp:publishedInStream ?venue .\n  ?venue rdfs:label ?venue_name .\n  OPTIONAL { ?publication dblp:yearOfPublication ?year } .\n}"
+    },
+    {
+      "question": "What are the papers written by David Sena Oliveira?",
+      "sparql": "PREFIX dblp: <https://dblp.org/rdf/schema#>\nSELECT * WHERE {\n  ?author dblp:creatorName ?author_name .\n  FILTER CONTAINS( ?author_name, \"David Sena Oliveira\" )\n  ?author ^dblp:authoredBy ?publication .\n  ?publication dblp:title ?title .\n}"
+    },
+    {
+      "question": "What are the most cited publications with title keyword 'database'?",
+      "sparql": "PREFIX dblp: <https://dblp.org/rdf/schema#>\nPREFIX cito: <http://purl.org/spar/cito/>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nPREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nSELECT ?publ ?label (COUNT(?citation) as ?cites) WHERE {\n  ?publ rdf:type dblp:Publication .\n  ?publ dblp:title ?title .\n  FILTER CONTAINS(?title, \"database\") .\n  ?publ dblp:omid ?omid .\n  ?publ rdfs:label ?label .\n  ?citation rdf:type cito:Citation .\n  ?citation cito:hasCitedEntity ?omid .\n}\nGROUP BY ?publ ?label \nORDER BY DESC(?cites)\nLIMIT 10"
+    },
+    {
+      "question": "On average, how many research papers does Hannah Bast publish each year?",
+      "sparql": "PREFIX dblp: <https://dblp.org/rdf/schema#>\nSELECT (FLOOR(AVG(?countPerYear)) AS ?averagePublicationsPerYear)\nWHERE {\n  {\n    SELECT ?year (COUNT(DISTINCT ?paper) AS ?countPerYear)\n    WHERE {\n      ?author dblp:creatorName ?author_name .\n      FILTER CONTAINS( ?author_name, \"Hannah Bast\" )\n      ?paper dblp:authoredBy ?author . \n      ?paper dblp:yearOfPublication ?year .\n    }\n    GROUP BY ?year\n  }\n}"
+    },
+    {
+      "question": "What is Hannah Bast's yearly publication count?",
+      "sparql": "PREFIX dblp: <https://dblp.org/rdf/schema#>\nSELECT ?year (COUNT(DISTINCT ?paper) AS ?countPerYear) WHERE \n{\n   ?author dblp:creatorName ?author_name .\n   FILTER CONTAINS( ?author_name, \"Hannah Bast\" )\n   ?paper dblp:authoredBy ?author . \n   ?paper dblp:yearOfPublication ?year .\n}\nGROUP BY ?year\nORDER BY DESC(?year)"
+    },
+    {
+      "question": "Give me doctoral students in dblp having published in the Semantic Web journal?",
+      "sparql": "PREFIX dblp: <https://dblp.org/rdf/schema#>\nPREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nPREFIX wdt: <http://www.wikidata.org/prop/direct/>\nPREFIX wd: <http://www.wikidata.org/entity/>\nSELECT ?student ?student_label ?advisor WHERE {\n  ?student rdf:type dblp:Person .\n  ?student rdfs:label ?student_label .\n  ?student dblp:wikidata ?student_q .\n  ?publ dblp:publishedInStream <https://dblp.org/streams/journals/semweb> .\n  ?publ dblp:authoredBy ?student .\n  SERVICE <https://query.wikidata.org/sparql> {\n    ?student_q wdt:P2456 [] .\n\t?student_q wdt:P31 wd:Q5 .\n    ?student_q wdt:P184 ?advisor_q .\n    ?advisor_q rdfs:label ?advisor .\n    FILTER(LANG(?advisor) = 'en')\n  }\n}\nGROUP BY ?student ?student_label ?advisor\nLIMIT 10"
+    },
+    {
+      "question": "What is the number of theses in dblp by school?",
+      "sparql": "PREFIX dblp: <https://dblp.org/rdf/schema#>\nPREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nSELECT ?school (COUNT(DISTINCT ?thesis) as ?count) WHERE {\n  ?thesis rdf:type dblp:Book .\n  ?thesis dblp:thesisAcceptedBySchool ?school .\n}\nGROUP BY ?school \nORDER BY DESC(?count)"
+    },
+    {
+      "question": "Who are the highly cited coauthors of Hannah Bast?",
+      "sparql": "PREFIX dblp: <https://dblp.org/rdf/schema#>\nPREFIX cito: <http://purl.org/spar/cito/>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nSELECT ?name ?affiliation (COUNT(DISTINCT ?cite) as ?cites) (?coauthor as ?dblp) (SAMPLE(?orcids) as ?orcid) WHERE {\n  ?author dblp:creatorName ?author_name .\n  FILTER CONTAINS( ?author_name, \"Hannah Bast\" )\n  ?copubl dblp:authoredBy ?author .\n  ?copubl dblp:authoredBy ?coauthor .\n  FILTER ( ?author != ?coauthor ) .\n  ?coauthor rdfs:label ?name .\n  OPTIONAL { ?coauthor dblp:orcid ?orcids . }\n  OPTIONAL { ?coauthor dblp:primaryAffiliation ?affiliation . }\n  ?publ dblp:authoredBy ?coauthor .\n  ?publ dblp:omid ?omid .\n  ?cite cito:hasCitedEntity ?omid .\n}\nGROUP BY ?name ?affiliation ?coauthor\nORDER BY DESC(?cites)\nLIMIT 10"
+    },
+    {
+      "question": "What are the venues with largest community overlap with Transactions on Graph Data and Knowledge (TGDK)?",
+      "sparql": "PREFIX dblp: <https://dblp.org/rdf/schema#>\nPREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nSELECT ?venue (?other_stream as ?dblp) (COUNT(DISTINCT ?creator) as ?community_overlap) WHERE {\n  ?stream rdf:type dblp:Stream .\n  ?stream rdfs:label ?stream_label .\n  FILTER(CONTAINS(?stream_label, \"Transactions on Graph Data and Knowledge (TGDK)\"))\n  ?publ dblp:publishedInStream ?stream .\n  ?publ dblp:createdBy ?creator .\n  MINUS { ?creator rdf:type dblp:AmbiguousCreator . }\n  ?other_publ dblp:createdBy ?creator .\n  FILTER (?other_publ != ?publ ) .\n  ?other_publ dblp:publishedInStream ?other_stream .\n  FILTER (?other_stream != ?stream ) .\n  ?other_stream rdfs:label ?venue .\n}\nGROUP BY ?venue ?other_stream \nORDER BY DESC(?community_overlap) \nLIMIT 10"
+    },
+    {
+     "question": "Who are the frequent authors of The Web Conference?",
+      "sparql": "PREFIX dblp: <https://dblp.org/rdf/schema#>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nPREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nSELECT ?name ?affiliation (COUNT(DISTINCT ?publ) as ?freq) (?pers as ?dblp) (SAMPLE(?orcids) as ?orcid) WHERE {\n  ?stream rdf:type dblp:Stream .\n  ?stream rdfs:label ?stream_label .\n  FILTER(CONTAINS(?stream_label, \"The Web Conference (WWW)\"))\n  ?publ dblp:publishedInStream ?stream .\n  ?publ dblp:authoredBy ?pers .\n  ?pers rdfs:label ?name .\n  OPTIONAL { ?pers dblp:primaryAffiliation ?affiliation . }\n  OPTIONAL { ?pers dblp:orcid ?orcids . }\n}\nGROUP BY ?name ?affiliation ?pers\nORDER BY DESC(?freq) \nLIMIT 10"
+    }
+
+  ]
+
+}

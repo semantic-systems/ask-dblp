@@ -64,11 +64,15 @@ export default function SPARQLQueryApp() {
   };
 
   const handleRunSPARQL = async () => {
+    if (!sparqlQuery.trim()) {
+      toast.error("Query input cannot be empty.");
+      return;
+    }
     try {
       const response = await fetch('/api/run_sparql', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: sparqlQuery }),
+        body: JSON.stringify({ user_query: userQuery, query: sparqlQuery }),
       });
       const data = await response.json();
       setQueryResult(data.sparql_results);

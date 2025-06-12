@@ -7,6 +7,7 @@ from openai import OpenAI
 import re
 from config import Config
 import numpy as np
+import utils
 
 def extract_triple_quoted_string(text):
     match = re.search(r'"""\s*(.*?)\s*"""', text, re.DOTALL)
@@ -24,10 +25,12 @@ def compute_confidence_score(logprobs):
     return confidence_score
 
 def get_question_to_sparql_prompt(question):
+    examples = utils.get_examples("build_sparql")
     prompt_template = question_to_sparql_prompt.QUESTION_TO_SPARQL_PROMPT
     prompt = prompt_template.format(
         question=question,
         dblp_schema=dblp_schema.properties_uri_and_description,
+        examples=examples,
     )
     return prompt
 
@@ -39,7 +42,7 @@ def question_to_sparql(question, llm='chatai'):
     #     return sparql['sparql']
     # sparql_result = llama(prompt)
     sparql_result, confidence = chatai_models(prompt)
-    print(sparql_result)
+    # print(sparql_result)
     return sparql_result['sparql'], confidence
 
 

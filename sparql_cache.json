@@ -1,0 +1,125 @@
+{
+  "In which institutions does Ricardo Usbeck work?": {
+    "sparql": "# ASK-DBLP: In which institutions does Ricardo Usbeck work?\nSELECT ?institution\nWHERE {\n  ?creator <https://dblp.org/rdf/schema#creatorName> \"Ricardo Usbeck\" .\n  ?creator <https://dblp.org/rdf/schema#affiliation> ?institution .\n}",
+    "confidence_score": 0.978043855011937,
+    "answer": [
+      {
+        "institution": "Hamburger Informatik Technologie-Center e.V. (HITeC), Hamburg, Germany"
+      },
+      {
+        "institution": "Leuphana University of Lüneburg, Institute of Information Systems (IIS), Germany"
+      },
+      {
+        "institution": "University of Hamburg, Department of Informatics, Germany"
+      }
+    ]
+  },
+  "Who are the authors of 'NFDI4DS Gateway and Portal.'?": {
+    "sparql": "# ASK-DBLP: Who are the authors of 'NFDI4DS Gateway and Portal.'?\nSELECT ?author\nWHERE {\n  ?publication <https://dblp.org/rdf/schema#title> 'NFDI4DS Gateway and Portal' .\n  ?publication <https://dblp.org/rdf/schema#authoredBy> ?author .\n  ?author <https://dblp.org/rdf/schema#creatorName> ?authorName .\n}",
+    "confidence_score": 0.9734480414087324,
+    "user_updated_sparql": "# Confidence_score: 0.9734480414087324\n# ASK-DBLP: Who are the authors of 'NFDI4DS Gateway and Portal.'?\nPREFIX dblp: <https://dblp.org/rdf/schema#>\nSELECT ?author\nWHERE {\n  ?publication dblp:title 'NFDI4DS Gateway and Portal.' .\n  ?publication dblp:authoredBy ?author .\n  ?author dblp:creatorName ?authorName .\n}",
+    "answer": [
+      {
+        "author": "https://dblp.org/pid/256/6334"
+      },
+      {
+        "author": "https://dblp.org/pid/260/1986"
+      },
+      {
+        "author": "https://dblp.org/pid/260/1986"
+      },
+      {
+        "author": "https://dblp.org/pid/354/9763"
+      },
+      {
+        "author": "https://dblp.org/pid/356/2277"
+      },
+      {
+        "author": "https://dblp.org/pid/356/2480"
+      },
+      {
+        "author": "https://dblp.org/pid/356/2567"
+      },
+      {
+        "author": "https://dblp.org/pid/65/9656"
+      },
+      {
+        "author": "https://dblp.org/pid/94/622"
+      },
+      {
+        "author": "https://dblp.org/pid/94/622"
+      }
+    ]
+  },
+  "When was the first paper of Ricardo Usbeck Published?": {
+    "sparql": "# ASK-DBLP: When was the first paper of Ricardo Usbeck Published?\nSELECT ?year\nWHERE {\n  ?publication <https://dblp.org/rdf/schema#authoredBy> ?creator .\n  ?creator <https://dblp.org/rdf/schema#creatorName> \"Ricardo Usbeck\" .\n  ?publication <https://dblp.org/rdf/schema#yearOfPublication> ?year .\n}\nORDER BY ?year\nLIMIT 1",
+    "confidence_score": 0.9765477430948962,
+    "answer": [
+      {
+        "year": "2011"
+      },
+      {
+        "year": "2013"
+      }
+    ],
+    "user_updated_sparql": "# Confidence_score: 0.9765477430948962\n # ASK-DBLP: When was the first paper of Ricardo Usbeck Published?\nSELECT DISTINCT ?year\nWHERE {\n  ?publication <https://dblp.org/rdf/schema#authoredBy> ?creator .\n  ?creator <https://dblp.org/rdf/schema#creatorName> \"Ricardo Usbeck\" .\n  ?publication <https://dblp.org/rdf/schema#yearOfPublication> ?year .\n}\nORDER BY ?year\nLIMIT 2"
+  },
+  "What are the papers Ricardo Usbeck published with Debayan Banerjee?": {
+    "sparql": "# ASK-DBLP: What are the papers Ricardo Usbeck published with Debayan Banerjee?\nSELECT ?paper ?title WHERE {\n  ?paper <https://dblp.org/rdf/schema#authoredBy> ?creator1 .\n  ?paper <https://dblp.org/rdf/schema#authoredBy> ?creator2 .\n  ?creator1 <https://dblp.org/rdf/schema#creatorName> \"Ricardo Usbeck\" .\n  ?creator2 <https://dblp.org/rdf/schema#creatorName> \"Debayan Banerjee\" .\n  ?paper <https://dblp.org/rdf/schema#title> ?title .\n}",
+    "confidence_score": 0.9725983271766738,
+    "answer": [
+      {
+        "title": "DBLP-QuAD DBLP Dump."
+      },
+      {
+        "title": "DBLP-QuAD: A Question Answering Dataset over the DBLP Scholarly Knowledge Graph."
+      },
+      {
+        "title": "DBLP-QuAD."
+      },
+      {
+        "title": "DBLPLink: An Entity Linker for the DBLP Scholarly Knowledge Graph."
+      },
+      {
+        "title": "GETT-QA: Graph Embedding based T2T Transformer for Knowledge Graph Question Answering."
+      },
+      {
+        "title": "GETT-QA: Graph Embedding Based T2T Transformer for Knowledge Graph Question Answering."
+      },
+      {
+        "title": "Hybrid-SQuAD: Hybrid Scholarly Question Answering Dataset."
+      },
+      {
+        "title": "Modern Baselines for SPARQL Semantic Parsing."
+      },
+      {
+        "title": "Reporting and Analysing the Environmental Impact of Language Models on the Example of Commonsense Question Answering with External Knowledge."
+      },
+      {
+        "title": "The Role of Output Vocabulary in T2T LMs for SPARQL Semantic Parsing."
+      }
+    ],
+    "user_updated_sparql": "# Confidence_score: 0.9725983271766738\n # ASK-DBLP: What are the papers Ricardo Usbeck published with Debayan Banerjee?\nSELECT DISTINCT ?title WHERE {\n  ?paper <https://dblp.org/rdf/schema#authoredBy> ?creator1 .\n  ?paper <https://dblp.org/rdf/schema#authoredBy> ?creator2 .\n  ?creator1 <https://dblp.org/rdf/schema#creatorName> \"Ricardo Usbeck\" .\n  ?creator2 <https://dblp.org/rdf/schema#creatorName> \"Debayan Banerjee\" .\n  ?paper <https://dblp.org/rdf/schema#title> ?title .\n}"
+  },
+  "Question Answering papers published in ISWC.": {
+    "sparql": "#ASK-DBLP: Question Answering papers published in ISWC.\nPREFIX dblp: <https://dblp.org/rdf/schema#>\nSELECT ?paper ?title WHERE {\n  ?paper dblp:title ?title .\n  ?paper dblp:publishedInStream ?stream .\n  ?stream dblp:primaryStreamTitle ?stream_title .\n  FILTER(CONTAINS(?stream_title, \"ISWC\"))\n  FILTER(CONTAINS(?title, \"Question Answering\"))\n}",
+    "confidence_score": 0.9449102162477349,
+    "answer": [
+      {
+        "paper": "https://dblp.org/rec/conf/semweb/DingLQWHMMCLHT23",
+        "title": "ForecastTKGQuestions: A Benchmark for Temporal Question Answering and Forecasting over Temporal Knowledge Graphs."
+      }
+    ]
+  },
+  "What is the highly cited paper from ISWC?": {
+    "sparql": "# ASK-DBLP: What is the highly cited paper from ISWC?\nPREFIX dblp: <https://dblp.org/rdf/schema#>\nPREFIX cito: <http://purl.org/spar/cito/>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nSELECT ?paper ?title (COUNT(?citation) as ?cites) WHERE {\n  ?paper dblp:publishedInStream <https://dblp.org/streams/conf/iswc> .\n  ?paper dblp:title ?title .\n  ?paper dblp:omid ?omid .\n  ?citation cito:hasCitedEntity ?omid .\n}\nGROUP BY ?paper ?title\nORDER BY DESC(?cites)\nLIMIT 1",
+    "confidence_score": 0.9706607087342211,
+    "answer": [
+      {
+        "paper": "https://dblp.org/rec/conf/iswc/ReissS12",
+        "title": "Introducing a New Benchmarked Dataset for Activity Monitoring.",
+        "cites": "794"
+      }
+    ]
+  }
+}
