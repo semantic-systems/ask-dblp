@@ -1,64 +1,29 @@
 {
   "In which institutions does Ricardo Usbeck work?": {
-    "sparql": "# ASK-DBLP: In which institutions does Ricardo Usbeck work?\nSELECT ?institution\nWHERE {\n  ?creator <https://dblp.org/rdf/schema#creatorName> \"Ricardo Usbeck\" .\n  ?creator <https://dblp.org/rdf/schema#affiliation> ?institution .\n}",
-    "confidence_score": 0.978043855011937,
+    "sparql": "# ASK-DBLP: In which institutions does Ricardo Usbeck work?\nPREFIX dblp: <https://dblp.org/rdf/schema#>\nSELECT ?affiliation WHERE {\n  ?creator dblp:creatorName ?creator_name .\n  FILTER CONTAINS(?creator_name, \"Ricardo Usbeck\")\n  ?creator dblp:affiliation ?affiliation .\n}",
+    "confidence_score": 0.9680362611138495,
     "answer": [
       {
-        "institution": "Hamburger Informatik Technologie-Center e.V. (HITeC), Hamburg, Germany"
+        "affiliation": "Hamburger Informatik Technologie-Center e.V. (HITeC), Hamburg, Germany"
       },
       {
-        "institution": "Leuphana University of Lüneburg, Institute of Information Systems (IIS), Germany"
+        "affiliation": "Leuphana University of Lüneburg, Institute of Information Systems (IIS), Germany"
       },
       {
-        "institution": "University of Hamburg, Department of Informatics, Germany"
+        "affiliation": "University of Hamburg, Department of Informatics, Germany"
+      },
+      {
+        "affiliation": "University of Leipzig, Germany"
+      },
+      {
+        "affiliation": "University of Paderborn, Department of Computer Science, Germany"
       }
     ]
   },
   "Who are the authors of 'NFDI4DS Gateway and Portal.'?": {
     "sparql": "#ASK-DBLP: Who are the authors of 'NFDI4DS Gateway and Portal.'?\nPREFIX dblp: <https://dblp.org/rdf/schema#>\nSELECT ?author ?author_name WHERE {\n  ?publication dblp:title ?title .\n  FILTER CONTAINS(?title, \"NFDI4DS Gateway and Portal\") .\n  ?publication dblp:authoredBy ?author .\n  ?author dblp:creatorName ?author_name .\n}",
     "confidence_score": 0.980337688487114,
-    "answer": [
-      {
-        "author": "https://dblp.org/pid/256/6334",
-        "author_name": "Zongxiong Chen"
-      },
-      {
-        "author": "https://dblp.org/pid/260/1986",
-        "author_name": "Tilahun Abedissa"
-      },
-      {
-        "author": "https://dblp.org/pid/260/1986",
-        "author_name": "Tilahun Abedissa Taffa"
-      },
-      {
-        "author": "https://dblp.org/pid/354/9763",
-        "author_name": "Bianca Wentzel"
-      },
-      {
-        "author": "https://dblp.org/pid/356/2277",
-        "author_name": "Rana Abdullah"
-      },
-      {
-        "author": "https://dblp.org/pid/356/2480",
-        "author_name": "Rudy Alexandro Garrido Veliz"
-      },
-      {
-        "author": "https://dblp.org/pid/356/2567",
-        "author_name": "Najeebullah Shams"
-      },
-      {
-        "author": "https://dblp.org/pid/65/9656",
-        "author_name": "Ricardo Usbeck"
-      },
-      {
-        "author": "https://dblp.org/pid/94/622",
-        "author_name": "Sonja Maier"
-      },
-      {
-        "author": "https://dblp.org/pid/94/622",
-        "author_name": "Sonja Schimmler"
-      }
-    ]
+    "answer": "No answer found!"
   },
   "When was the first paper of Ricardo Usbeck Published?": {
     "sparql": "",
