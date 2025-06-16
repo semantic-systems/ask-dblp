@@ -15,96 +15,79 @@
     ]
   },
   "Who are the authors of 'NFDI4DS Gateway and Portal.'?": {
-    "sparql": "# ASK-DBLP: Who are the authors of 'NFDI4DS Gateway and Portal.'?\nSELECT ?author\nWHERE {\n  ?publication <https://dblp.org/rdf/schema#title> 'NFDI4DS Gateway and Portal' .\n  ?publication <https://dblp.org/rdf/schema#authoredBy> ?author .\n  ?author <https://dblp.org/rdf/schema#creatorName> ?authorName .\n}",
-    "confidence_score": 0.9734480414087324,
-    "user_updated_sparql": "# Confidence_score: 0.9734480414087324\n# ASK-DBLP: Who are the authors of 'NFDI4DS Gateway and Portal.'?\nPREFIX dblp: <https://dblp.org/rdf/schema#>\nSELECT ?author\nWHERE {\n  ?publication dblp:title 'NFDI4DS Gateway and Portal.' .\n  ?publication dblp:authoredBy ?author .\n  ?author dblp:creatorName ?authorName .\n}",
+    "sparql": "#ASK-DBLP: Who are the authors of 'NFDI4DS Gateway and Portal.'?\nPREFIX dblp: <https://dblp.org/rdf/schema#>\nSELECT ?author ?author_name WHERE {\n  ?publication dblp:title ?title .\n  FILTER CONTAINS(?title, \"NFDI4DS Gateway and Portal\") .\n  ?publication dblp:authoredBy ?author .\n  ?author dblp:creatorName ?author_name .\n}",
+    "confidence_score": 0.980337688487114,
     "answer": [
       {
-        "author": "https://dblp.org/pid/256/6334"
+        "author": "https://dblp.org/pid/256/6334",
+        "author_name": "Zongxiong Chen"
       },
       {
-        "author": "https://dblp.org/pid/260/1986"
+        "author": "https://dblp.org/pid/260/1986",
+        "author_name": "Tilahun Abedissa"
       },
       {
-        "author": "https://dblp.org/pid/260/1986"
+        "author": "https://dblp.org/pid/260/1986",
+        "author_name": "Tilahun Abedissa Taffa"
       },
       {
-        "author": "https://dblp.org/pid/354/9763"
+        "author": "https://dblp.org/pid/354/9763",
+        "author_name": "Bianca Wentzel"
       },
       {
-        "author": "https://dblp.org/pid/356/2277"
+        "author": "https://dblp.org/pid/356/2277",
+        "author_name": "Rana Abdullah"
       },
       {
-        "author": "https://dblp.org/pid/356/2480"
+        "author": "https://dblp.org/pid/356/2480",
+        "author_name": "Rudy Alexandro Garrido Veliz"
       },
       {
-        "author": "https://dblp.org/pid/356/2567"
+        "author": "https://dblp.org/pid/356/2567",
+        "author_name": "Najeebullah Shams"
       },
       {
-        "author": "https://dblp.org/pid/65/9656"
+        "author": "https://dblp.org/pid/65/9656",
+        "author_name": "Ricardo Usbeck"
       },
       {
-        "author": "https://dblp.org/pid/94/622"
+        "author": "https://dblp.org/pid/94/622",
+        "author_name": "Sonja Maier"
       },
       {
-        "author": "https://dblp.org/pid/94/622"
+        "author": "https://dblp.org/pid/94/622",
+        "author_name": "Sonja Schimmler"
       }
     ]
   },
   "When was the first paper of Ricardo Usbeck Published?": {
-    "sparql": "# ASK-DBLP: When was the first paper of Ricardo Usbeck Published?\nSELECT ?year\nWHERE {\n  ?publication <https://dblp.org/rdf/schema#authoredBy> ?creator .\n  ?creator <https://dblp.org/rdf/schema#creatorName> \"Ricardo Usbeck\" .\n  ?publication <https://dblp.org/rdf/schema#yearOfPublication> ?year .\n}\nORDER BY ?year\nLIMIT 1",
-    "confidence_score": 0.9765477430948962,
-    "answer": [
-      {
-        "year": "2011"
-      },
-      {
-        "year": "2013"
-      }
-    ],
-    "user_updated_sparql": "# Confidence_score: 0.9765477430948962\n # ASK-DBLP: When was the first paper of Ricardo Usbeck Published?\nSELECT DISTINCT ?year\nWHERE {\n  ?publication <https://dblp.org/rdf/schema#authoredBy> ?creator .\n  ?creator <https://dblp.org/rdf/schema#creatorName> \"Ricardo Usbeck\" .\n  ?publication <https://dblp.org/rdf/schema#yearOfPublication> ?year .\n}\nORDER BY ?year\nLIMIT 2"
+    "sparql": "",
+    "confidence_score": 0
   },
   "What are the papers Ricardo Usbeck published with Debayan Banerjee?": {
-    "sparql": "# ASK-DBLP: What are the papers Ricardo Usbeck published with Debayan Banerjee?\nSELECT ?paper ?title WHERE {\n  ?paper <https://dblp.org/rdf/schema#authoredBy> ?creator1 .\n  ?paper <https://dblp.org/rdf/schema#authoredBy> ?creator2 .\n  ?creator1 <https://dblp.org/rdf/schema#creatorName> \"Ricardo Usbeck\" .\n  ?creator2 <https://dblp.org/rdf/schema#creatorName> \"Debayan Banerjee\" .\n  ?paper <https://dblp.org/rdf/schema#title> ?title .\n}",
-    "confidence_score": 0.9725983271766738,
-    "answer": [
-      {
-        "title": "DBLP-QuAD DBLP Dump."
-      },
-      {
-        "title": "DBLP-QuAD: A Question Answering Dataset over the DBLP Scholarly Knowledge Graph."
-      },
-      {
-        "title": "DBLP-QuAD."
-      },
-      {
-        "title": "DBLPLink: An Entity Linker for the DBLP Scholarly Knowledge Graph."
-      },
-      {
-        "title": "GETT-QA: Graph Embedding based T2T Transformer for Knowledge Graph Question Answering."
-      },
-      {
-        "title": "GETT-QA: Graph Embedding Based T2T Transformer for Knowledge Graph Question Answering."
-      },
-      {
-        "title": "Hybrid-SQuAD: Hybrid Scholarly Question Answering Dataset."
-      },
-      {
-        "title": "Modern Baselines for SPARQL Semantic Parsing."
-      },
-      {
-        "title": "Reporting and Analysing the Environmental Impact of Language Models on the Example of Commonsense Question Answering with External Knowledge."
-      },
-      {
-        "title": "The Role of Output Vocabulary in T2T LMs for SPARQL Semantic Parsing."
-      }
-    ],
-    "user_updated_sparql": "# Confidence_score: 0.9725983271766738\n # ASK-DBLP: What are the papers Ricardo Usbeck published with Debayan Banerjee?\nSELECT DISTINCT ?title WHERE {\n  ?paper <https://dblp.org/rdf/schema#authoredBy> ?creator1 .\n  ?paper <https://dblp.org/rdf/schema#authoredBy> ?creator2 .\n  ?creator1 <https://dblp.org/rdf/schema#creatorName> \"Ricardo Usbeck\" .\n  ?creator2 <https://dblp.org/rdf/schema#creatorName> \"Debayan Banerjee\" .\n  ?paper <https://dblp.org/rdf/schema#title> ?title .\n}"
+    "sparql": "",
+    "confidence_score": 0
   },
   "Question Answering papers published in ISWC.": {
     "sparql": "#ASK-DBLP: Question Answering papers published in ISWC.\nPREFIX dblp: <https://dblp.org/rdf/schema#>\nSELECT ?paper ?title WHERE {\n  ?paper dblp:title ?title .\n  ?paper dblp:publishedInStream ?stream .\n  ?stream dblp:primaryStreamTitle ?stream_title .\n  FILTER(CONTAINS(?stream_title, \"ISWC\"))\n  FILTER(CONTAINS(?title, \"Question Answering\"))\n}",
-    "confidence_score": 0.9449102162477349,
+    "confidence_score": 0.9449844833106152,
     "answer": [
+      {
+        "paper": "https://dblp.org/rec/conf/semweb/0007CGPYC21",
+        "title": "Zero-Shot Visual Question Answering Using Knowledge Graph."
+      },
+      {
+        "paper": "https://dblp.org/rec/conf/semweb/AtzeniA18",
+        "title": "What Is the Cube Root of 27? Question Answering Over CodeOntology."
+      },
+      {
+        "paper": "https://dblp.org/rec/conf/semweb/CabrioAV14",
+        "title": "Reconciling Information in DBpedia through a Question Answering System."
+      },
+      {
+        "paper": "https://dblp.org/rec/conf/semweb/DiefenbachTSM17",
+        "title": "Question Answering Benchmarks for Wikidata."
+      },
       {
         "paper": "https://dblp.org/rec/conf/semweb/DingLQWHMMCLHT23",
         "title": "ForecastTKGQuestions: A Benchmark for Temporal Question Answering and Forecasting over Temporal Knowledge Graphs."
@@ -121,5 +104,9 @@
         "cites": "794"
       }
     ]
+  },
+  "How many papers did the authors of 'An Investigation into Feature Effectiveness for Multimedia Hyperlinking' publish in 2014?": {
+    "sparql": "",
+    "confidence_score": 0
   }
 }
