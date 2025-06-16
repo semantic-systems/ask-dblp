@@ -1,0 +1,23 @@
+name: 'Deploy Ask-DBLP service on sems-kg-1'
+on:
+  workflow_dispatch:
+  push:
+    branches: 
+      - main
+
+jobs:
+  deploy:
+    runs-on: [sems-kg-1-runner]    
+    steps:
+      - name: 'Check out repo'
+        uses: actions/checkout@v3
+        with:
+          ref: main         
+      - name: 'Stop the running Ask-DBLP service'
+        run: docker compose down
+      - name: 'Delete old Docker image for frontend'
+        run: docker image rm dblp-nli-frontend || (echo "Image dblp-nli-frontend didn't exist so not removed."; exit 0)
+      - name: 'Delete old Docker image for frontend'
+        run: docker image rm dblp-nli-backend || (echo "Image dblp-nli-backend didn't exist so not removed."; exit 0)      
+      - name: 'Re-build Docker container from current source'
+        run: docker compose up --force-recreate --build --detach
