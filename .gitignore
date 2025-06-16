@@ -171,3 +171,6 @@ cython_debug/
 .pypirc
 
 .DS_Store
+
+log_data/
+sparql_cache.json
