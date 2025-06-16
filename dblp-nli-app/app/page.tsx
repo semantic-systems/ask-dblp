@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {toast, Toaster} from "sonner";
+import { Loader2 } from "lucide-react";
 
 interface SPARQLResult {
   head: {
@@ -24,6 +25,8 @@ export default function SPARQLQueryApp() {
   const [userQuery, setUserQuery] = useState("");
   const [sparqlQuery, setSparqlQuery] = useState("");
   const [queryResult, setQueryResult] = useState<SPARQLResult | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [running, setRunning] = useState(false);
 
   const exampleQuestions = [
     "What are the papers Ricardo Usbeck published with Debayan Banerjee?",
@@ -43,20 +46,23 @@ export default function SPARQLQueryApp() {
       return;
     }
     try {
+      setLoading(true);
       const response = await fetch('/api/generate_sparql', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: userQuery }),
       });
-
       const data = await response.json();
-
       if (response.status >= 400) {
         toast.error(`Error generating SPARQL. (${data.error})`);
         return;
       }
       const confidence_string = `# Confidence_score: ${data.confidence_score}`;
-      setSparqlQuery(`${confidence_string}\n ${data.sparql}`);
+      setTimeout(() => {
+        setSparqlQuery(`${confidence_string}\n ${data.sparql}`);
+        setLoading(false);
+      }, 1000);
+
     } catch (error) {
       console.error("SPARQL generation error:", error);
       toast.error("Error generating SPARQL.");
@@ -69,13 +75,17 @@ export default function SPARQLQueryApp() {
       return;
     }
     try {
+      setRunning(true);
       const response = await fetch('/api/run_sparql', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ user_query: userQuery, query: sparqlQuery }),
       });
       const data = await response.json();
-      setQueryResult(data.sparql_results);
+      setTimeout(() => {
+        setQueryResult(data.sparql_results);
+        setRunning(false);
+      }, 1000);
     } catch (error) {
       console.error("Failed to run SPARQL query:", error);
       toast.error("Failed to run SPARQL query.");
@@ -87,6 +97,9 @@ export default function SPARQLQueryApp() {
     <div className="max-w-6xl mx-auto overflow-x-auto">
       <Card className="mb-4">
         <CardContent className="p-4 space-y-2">
+          <p className="text-sm text-gray-600">
+            Enter your natural language question below, or click one of the examples to see how it works:
+          </p>
           <Input
             placeholder="Enter your query"
             value={userQuery}
@@ -103,7 +116,14 @@ export default function SPARQLQueryApp() {
               </Button>
             ))}
           </div>
-          <Button onClick={handleGenerateSPARQL}>Generate SPARQL</Button>
+          <Button onClick={() => handleGenerateSPARQL()} disabled={loading}>
+            {loading ? (
+              <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...</>
+            ) : (
+              "Generate SPARQL"
+            )}
+          </Button>
+          {loading && <p className="text-sm text-gray-500">Generating SPARQL query...</p>}
         </CardContent>
       </Card>
 
@@ -116,7 +136,15 @@ export default function SPARQLQueryApp() {
               value={sparqlQuery}
               onChange={(e) => setSparqlQuery(e.target.value)}
             />
-            <Button onClick={handleRunSPARQL}>Run Query</Button>
+
+            <Button onClick={handleRunSPARQL} disabled={running}>
+              {running ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Running...</>
+              ) : (
+                "Run Query"
+              )}
+            </Button>
+          {loading && <p className="text-sm text-gray-500">Running SPARQL query...</p>}
           </CardContent>
         </Card>
       )}
