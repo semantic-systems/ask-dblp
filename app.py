@@ -41,11 +41,11 @@ def generate_sparql():
       user_query = data.get("query", "")
       sparql_query, confidence = llms.question_to_sparql(user_query)
       query_cache[user_query] = {"sparql": sparql_query, "confidence_score": confidence}
-      save_cache()
+      # save_cache()
       return jsonify({"sparql": sparql_query, "confidence_score": confidence})
    except Exception as e:
       query_cache[user_query] = {"sparql": "", "confidence_score": 0}
-      save_cache()
+      # save_cache()
       return jsonify({"error": f"An exception occurred: {str(e)}"}), 500
 
 
@@ -59,7 +59,7 @@ def run_sparql():
    if user_query in query_cache:
       if query_cache[user_query].get("sparql","").strip() not in sparql_query.strip():
          query_cache[user_query].update({"user_updated_sparql":sparql_query})
-         save_cache()
+         # save_cache()
    # print(sparql_query)
    SPARQL_ENDPOINT = app.config['SPARQL_ENDPOINT']
    try:
@@ -67,13 +67,13 @@ def run_sparql():
       sparql.setQuery(sparql_query)
       sparql.setReturnFormat(JSON)
       results = sparql.query().convert()
-      query_cache[user_query].update({"answer": utils.extruct_values(results)})
+      #query_cache[user_query].update({"answer": utils.extruct_values(results)})
       # print(results)
-      save_cache()
+      # save_cache()
       return jsonify({"sparql_results": results})
    except Exception as e:
       query_cache[user_query].update({"answer": "No answer found!"})
-      save_cache()
+      # save_cache()
       return jsonify({"error": f"An exception occurred: {str(e)}"}), 500
 
 
