@@ -29,9 +29,7 @@ export default function SPARQLQueryApp() {
   const [running, setRunning] = useState(false);
 
   const exampleQuestions = [
-    "What are the papers Ricardo Usbeck published with Debayan Banerjee?",
-    "Who are the authors of 'NFDI4DS Gateway and Portal.'?",
-    "When was the first paper of Ricardo Usbeck Published?",
+    "Who are the authors of 'NFDI4DS Gateway and Portal'?",
     "In which institutions does Ricardo Usbeck work?",
     "Question Answering papers published in ISWC."
   ];

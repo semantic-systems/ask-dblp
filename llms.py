@@ -42,7 +42,7 @@ def question_to_sparql(question, llm='chatai'):
     #     return sparql['sparql']
     # sparql_result = llama(prompt)
     sparql_result, confidence = chatai_models(prompt)
-    # print(sparql_result)
+    print(sparql_result)
     return sparql_result['sparql'], confidence
 
 
