@@ -43,8 +43,9 @@ export default function SPARQLQueryApp() {
       toast.error("Query input cannot be empty.");
       return;
     }
+    setLoading(true);
     try {
-      setLoading(true);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       const response = await fetch('/api/generate_sparql', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -56,14 +57,12 @@ export default function SPARQLQueryApp() {
         return;
       }
       const confidence_string = `# Confidence_score: ${data.confidence_score}`;
-      setTimeout(() => {
-        setSparqlQuery(`${confidence_string}\n ${data.sparql}`);
-        setLoading(false);
-      }, 1000);
-
+      setSparqlQuery(`${confidence_string}\n ${data.sparql}`);
     } catch (error) {
       console.error("SPARQL generation error:", error);
       toast.error("Error generating SPARQL.");
+    } finally {
+        setLoading(false)
     }
   };
 
@@ -72,21 +71,21 @@ export default function SPARQLQueryApp() {
       toast.error("Query input cannot be empty.");
       return;
     }
+    setRunning(true);
     try {
-      setRunning(true);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       const response = await fetch('/api/run_sparql', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ user_query: userQuery, query: sparqlQuery }),
       });
       const data = await response.json();
-      setTimeout(() => {
-        setQueryResult(data.sparql_results);
-        setRunning(false);
-      }, 1000);
+      setQueryResult(data.sparql_results);
     } catch (error) {
       console.error("Failed to run SPARQL query:", error);
       toast.error("Failed to run SPARQL query.");
+    } finally {
+        setRunning(false);
     }
   };
 
@@ -95,8 +94,14 @@ export default function SPARQLQueryApp() {
     <div className="max-w-6xl mx-auto overflow-x-auto">
       <Card className="mb-4">
         <CardContent className="p-4 space-y-2">
+          <p className="text-justify text-sm text-gray-600">
+            Welcome to ASK-DBLP! <br/> <br/>
+            ASK-DBLP offers a natural language interface (NLI) that allows users to question the DBLP Knowledge Graph.
+            The system generates a corresponding SPARQL query, which you can review and edit. Once ready, it executes the query against the DBLP SPARQL endpoint and displays the results. <br/>
+
+          </p>
           <p className="text-sm text-gray-600">
-            Enter your natural language question below, or click one of the examples to see how it works:
+             Type your question or choose from the sample questions below.
           </p>
           <Input
             placeholder="Enter your query"
@@ -142,7 +147,7 @@ export default function SPARQLQueryApp() {
                 "Run Query"
               )}
             </Button>
-          {loading && <p className="text-sm text-gray-500">Running SPARQL query...</p>}
+          {running && <p className="text-sm text-gray-500">Running SPARQL query...</p>}
           </CardContent>
         </Card>
       )}
