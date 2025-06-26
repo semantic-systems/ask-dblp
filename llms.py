@@ -36,6 +36,7 @@ def get_question_to_sparql_prompt(question):
 
 
 def question_to_sparql(question, llm='chatai'):
+    entity_linking_result = utils.dblp_entity_linker(question)
     prompt = get_question_to_sparql_prompt(question)
     # if llm == 'chatgpt':
     #     sparql = chatgpt(prompt)
