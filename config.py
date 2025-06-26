@@ -10,6 +10,7 @@ class Config:
     OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
     CHATAI_API_KEY = os.environ.get("CHATAI_API_KEY", "")
     SPARQL_ENDPOINT = os.environ.get("SPARQL_ENDPOINT", "")
+    DBLP_ENTITY_LINKER = os.environ.get("DBLP_ENTITY_LINKER", "")
     LLMS = {
         "openai": {
             "url_chat_completions": "https://api.openai.com/v1/chat/completions",
