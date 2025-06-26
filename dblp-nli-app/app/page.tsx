@@ -27,6 +27,8 @@ export default function SPARQLQueryApp() {
   const [queryResult, setQueryResult] = useState<SPARQLResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [running, setRunning] = useState(false);
+  const [entityLinkingResult, setEntityLinkingResult] = useState([]);
+  const [selectedEntity, setSelectedEntity] = useState<{ label: string; uri: string } | null>(null);
 
   const exampleQuestions = [
     "Who are the authors of 'NFDI4DS Gateway and Portal'?",
@@ -34,8 +36,13 @@ export default function SPARQLQueryApp() {
     "Question Answering papers published in ISWC."
   ];
 
-  const handleExampleClick = (question: string) => {
+  const handleExampleClick = async (question: string) => {
     setUserQuery(question);
+    setSparqlQuery("");
+    setQueryResult(null);
+    setSelectedEntity(null);
+    setEntityLinkingResult([]);
+    await handleGenerateSPARQL(question);
   };
 
   const handleGenerateSPARQL = async () => {
