@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {toast, Toaster} from "sonner";
 import { Loader2 } from "lucide-react";
+import {MdOutlineThumbDown, MdOutlineThumbUp} from 'react-icons/md';
 
 interface SPARQLResult {
   head: {
@@ -89,6 +90,14 @@ export default function SPARQLQueryApp() {
     }
   };
 
+  const rankUp = () => {
+    toast.info('The query has been marked as sufficient');
+  };
+
+  const rankDown = () => {
+    toast.info('The query has been marked as not sufficient');
+  };
+
   return (
     //<div className="max-w-2xl mx-auto p-6 space-y-4">
     <div className="max-w-6xl mx-auto overflow-x-auto">
@@ -140,14 +149,36 @@ export default function SPARQLQueryApp() {
               onChange={(e) => setSparqlQuery(e.target.value)}
             />
 
-            <Button onClick={handleRunSPARQL} disabled={running}>
-              {running ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Running...</>
-              ) : (
-                "Run Query"
-              )}
-            </Button>
-          {running && <p className="text-sm text-gray-500">Running SPARQL query...</p>}
+            <div className="row flex">
+              <div className="row flex">
+                <button
+                  className="rounded-md rounded-r-none bg-gray-600 py-2 px-4 border border-transparent text-center text-sm text-white hover:cursor-pointer transition-all shadow-md hover:shadow-lg focus:shadow-none active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+                  title="Generated query is not sufficient"
+                  type="button"
+                  onClick={rankDown}
+                >
+                  <MdOutlineThumbDown/>
+                </button>
+                <button
+                  className="rounded-md rounded-l-none bg-black py-2 px-4 border border-transparent text-center text-sm text-white hover:cursor-pointer transition-all shadow-md hover:shadow-lg focus:shadow-none active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
+                  title="Generated query is sufficient"
+                  type="button"
+                  onClick={rankUp}
+                >
+                  <MdOutlineThumbUp/>
+                </button>
+              </div>
+              <div className="ml-3">
+                <Button onClick={handleRunSPARQL} disabled={running}>
+                  {running ? (
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Running...</>
+                  ) : (
+                    "Run Query"
+                  )}
+                </Button>
+                {running && <span className="text-sm text-gray-500 ml-2">Running SPARQL query...</span>}
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
