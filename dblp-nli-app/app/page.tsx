@@ -74,7 +74,7 @@ export default function SPARQLQueryApp() {
     setSparqlQuery("");
     setQueryResult(null);
     setEntityLinkingGroups([]);
-    await handleGenerateSPARQL(question);
+    //await handleGenerateSPARQL(question);
   };
 
   const handleGenerateSPARQL = async (exampleQuery?: string) => {
