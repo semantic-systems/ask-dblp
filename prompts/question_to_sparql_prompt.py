@@ -26,6 +26,9 @@ Select the appropriate property URI while creating the SPARQL from the Knowledge
 
 ===Question
 {question}
+
+===Entities
+{entities}
 """
 
 QUESTION_TO_SPARQL_PROMPT = PromptTemplate.from_template(prompt_template)
