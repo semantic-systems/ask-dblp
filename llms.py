@@ -1,18 +1,9 @@
 import requests
 from requests.auth import HTTPBasicAuth
 import json
-from prompts import question_to_sparql_prompt
-import dblp_schema
 from openai import OpenAI
-import re
 from config import Config
 import numpy as np
-import utils
-
-def extract_triple_quoted_string(text):
-    match = re.search(r'"""\s*(.*?)\s*"""', text, re.DOTALL)
-    return match.group(1) if match else None
-
 
 def compute_confidence_score(logprobs):
     all_logprobs = []
@@ -23,28 +14,6 @@ def compute_confidence_score(logprobs):
     confidence_score = np.prod(token_probs) ** (1 / len(token_probs))
 
     return confidence_score
-
-def get_question_to_sparql_prompt(question):
-    examples = utils.get_examples("build_sparql")
-    prompt_template = question_to_sparql_prompt.QUESTION_TO_SPARQL_PROMPT
-    prompt = prompt_template.format(
-        question=question,
-        dblp_schema=dblp_schema.properties_uri_and_description,
-        examples=examples,
-    )
-    return prompt
-
-
-def question_to_sparql(question, llm='chatai'):
-    entity_linking_result = utils.dblp_entity_linker(question)
-    prompt = get_question_to_sparql_prompt(question)
-    # if llm == 'chatgpt':
-    #     sparql = chatgpt(prompt)
-    #     return sparql['sparql']
-    # sparql_result = llama(prompt)
-    sparql_result, confidence = chatai_models(prompt)
-    print(sparql_result)
-    return sparql_result['sparql'], confidence
 
 
 def llama(user_prompt, sys_prompt_string="You are an experienced knowledge graph expert."):
@@ -76,7 +45,7 @@ def llama(user_prompt, sys_prompt_string="You are an experienced knowledge graph
         return None
 
 
-def chatai_models(prompt):
+def chatai_models(prompt, model, function_call_flag = 1):
     sparql_generation_function = [
         {
             "name": "sparql_generation_function",
@@ -93,37 +62,62 @@ def chatai_models(prompt):
 
         }
     ]
+    question_completeness_checker = [
+        {
+            "name": "question_completeness_checker",
+            "description": "Question Completeness Checker.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "completeness": {
+                        "type": "string",
+                        "description": "Question completeness validation response",
+                    }
+                }
+            }
+
+        }
+    ]
+    function_call = sparql_generation_function
+    flag = False
+    if function_call_flag != 1:
+        function_call = question_completeness_checker
+        flag = True
+
     api_key = Config.LLMS['chatai']['chatai_api_key']
     base_url = Config.LLMS['chatai']['url']
-    model = Config.LLMS['chatai']['model']
+    model = model # Config.LLMS['chatai']['model']
     client = OpenAI(
         api_key=api_key,
         base_url=base_url
     )
-    messages = [{"role": "user", "content": prompt}]
-    # messages = [ {"role": "system", "content": "You are an experienced knowledge graph expert."},
-    #     {"role": "user", "content": messages}
-    # ]
+    # messages = [{"role": "user", "content": prompt}]
+    messages = [ {"role": "system", "content": "You are an experienced knowledge graph expert."},
+        {"role": "user", "content": prompt}
+    ]
     chat_completion = client.chat.completions.create(
         model=model,
         messages=messages,
-        functions=sparql_generation_function,
+        functions=function_call,
         function_call='auto',
         temperature=0,
         logprobs=True
     )
     try:
         result = json.loads(chat_completion.choices[0].message.content)
+        # print(result)
+        if flag:
+            return result
         logprobs = chat_completion.choices[0].logprobs.content
         confidence_score = compute_confidence_score(logprobs)
-        print("Confidence score:", confidence_score)
+        # print("Confidence score:", confidence_score)
         return result, confidence_score
     except Exception as e:
-        print(f"An error occurred while generating answer: {e}")
+        print(f"An error occurred while generating response: {e}")
         return None
 
 
-def chatgpt(prompt):
+def chatgpt(prompt, function_call_flag = 1):
     sparql_generation_function = [
         {
             "name": "sparql_generation_function",
@@ -140,15 +134,37 @@ def chatgpt(prompt):
 
         }
     ]
+    question_completeness_checker = [
+        {
+            "name": "question_completeness_checking_function",
+            "description": "Question Completeness Checker.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "completeness": {
+                        "type": "string",
+                        "description": "Question completeness validation response",
+                    }
+                }
+            }
+
+        }
+    ]
+    function_call = sparql_generation_function
+    if function_call_flag != 1:
+        function_call = question_completeness_checker
 
     model = Config.LLMS['openai']['model']
-    client = OpenAI()
+    api_key = Config.LLMS['openai']['open_api_key']
+    client = OpenAI(
+        api_key=api_key
+    )
     completion = client.chat.completions.create(
         model=model,
         messages=[
             {"role": "user", "content": prompt}
         ],
-        functions=sparql_generation_function,
+        functions=function_call,
         function_call='auto'
     )
     try:
