@@ -17,7 +17,7 @@ jobs:
         run: docker compose down
       - name: 'Delete old Docker image for frontend'
         run: docker image rm dblp-nli-frontend || (echo "Image dblp-nli-frontend didn't exist so not removed."; exit 0)
-      - name: 'Delete old Docker image for frontend'
+      - name: 'Delete old Docker image for backend'
         run: docker image rm dblp-nli-backend || (echo "Image dblp-nli-backend didn't exist so not removed."; exit 0)      
       - name: 'Re-build Docker container from current source'
         run: docker compose up --force-recreate --build --detach
