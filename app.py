@@ -1,3 +1,5 @@
+import logging
+
 from SPARQLWrapper import SPARQLWrapper, JSON
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -72,6 +74,7 @@ def generate_sparql():
    except Exception as e:
       # query_cache[user_query] = {"sparql": "", "confidence_score": 0}
       # save_cache()
+      logging.error(str(e), exc_info=e)
       return jsonify({"error": f"An exception occurred: {str(e)}"}), 500
 
 
