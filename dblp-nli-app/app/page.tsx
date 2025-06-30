@@ -104,7 +104,7 @@ export default function SPARQLQueryApp() {
   };
 
   const extractQueryDescription = (txt: string): string | undefined => {
-    const m = txt.match(/# ASK-DBLP: (.+?)\n/);
+    const m = txt.match(/#\s*ASK-DBLP: (.+?)\n/);
 
     if (m) {
       return m[1];
@@ -113,7 +113,7 @@ export default function SPARQLQueryApp() {
 
   const replaceQueryDescription = (query: string, newDescription: string): string => {
     const newDescriptionLine = `# ASK-DBLP: ${newDescription}\n`;
-    return query.replace(/# ASK-DBLP: (.+?)\n/, newDescriptionLine);
+    return query.replace(/#\s*ASK-DBLP: (.+?)\n/, newDescriptionLine);
   };
 
   useEffect(() => {
