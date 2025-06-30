@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ interface SPARQLResult {
 export default function SPARQLQueryApp() {
   const [userQuery, setUserQuery] = useState("");
   const [sparqlQuery, setSparqlQuery] = useState("");
+  const [queryDescription, setQueryDescription] = useState("");
   const [queryResult, setQueryResult] = useState<SPARQLResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [running, setRunning] = useState(false);
@@ -37,6 +38,34 @@ export default function SPARQLQueryApp() {
 
   const handleExampleClick = (question: string) => {
     setUserQuery(question);
+  };
+
+  const updateSparqlQuery = (txt: string) => {
+    setSparqlQuery(txt);
+  };
+
+  const extractQueryDescription = (txt: string): string | undefined => {
+    const m = txt.match(/# ASK-DBLP: (.+?)\n/);
+
+    if (m) {
+      return m[1];
+    }
+  };
+
+  const replaceQueryDescription = (query: string, newDescription: string): string => {
+    const newDescriptionLine = `# ASK-DBLP: ${newDescription}\n`;
+    return query.replace(/# ASK-DBLP: (.+?)\n/, newDescriptionLine);
+  };
+
+  useEffect(() => {
+    const newQueryDescription = extractQueryDescription(sparqlQuery);
+    setQueryDescription(newQueryDescription || "");
+  }, [sparqlQuery]);
+
+  const updateQueryDescription = (newQueryDescription: string) => {
+    const newQuery = replaceQueryDescription(sparqlQuery, newQueryDescription);
+    setSparqlQuery(newQuery);
+    setQueryDescription(newQueryDescription);
   };
 
   const handleGenerateSPARQL = async () => {
@@ -58,7 +87,7 @@ export default function SPARQLQueryApp() {
         return;
       }
       const confidence_string = `# Confidence_score: ${data.confidence_score}`;
-      setSparqlQuery(`${confidence_string}\n ${data.sparql}`);
+      updateSparqlQuery(`${confidence_string}\n ${data.sparql}`);
     } catch (error) {
       console.error("SPARQL generation error:", error);
       toast.error("Error generating SPARQL.");
@@ -146,11 +175,22 @@ export default function SPARQLQueryApp() {
               className="w-full"
               rows={10}
               value={sparqlQuery}
-              onChange={(e) => setSparqlQuery(e.target.value)}
+              onChange={(e) => updateSparqlQuery(e.target.value)}
             />
 
             <div className="row flex">
-              <div className="row flex">
+              <span className="block text-gray-700 text-sm font-bold mt-2 mb-2 mr-2">
+                Description
+              </span>
+              <Input placeholder="Describe your query" value={queryDescription}
+                     onChange={(e) => updateQueryDescription(e.target.value)}/>
+              <Button className="ml-1" onClick={handleRunSPARQL} disabled={running}>
+                Save
+              </Button>
+            </div>
+
+            <div className="row flex">
+              <div className="flex">
                 <button
                   className="rounded-md rounded-r-none bg-gray-600 py-2 px-4 border border-transparent text-center text-sm text-white hover:cursor-pointer transition-all shadow-md hover:shadow-lg focus:shadow-none active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none"
                   title="Generated query is not sufficient"
