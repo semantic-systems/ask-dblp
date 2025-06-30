@@ -22,6 +22,27 @@ interface SPARQLResult {
   };
 }
 
+type LinkedEntity = {
+  original_label: string;
+  normalized_label: string;
+  uri: string;
+};
+
+type EntityGroup = {
+  entity_type: string;
+  entities: LinkedEntity[];
+};
+
+type GroupedEntityUI = {
+  entity_type: string;
+  options: LinkedEntity[];
+  selected: LinkedEntity;
+};
+
+type EntityWithType = LinkedEntity & {
+  entity_type: string;
+};
+
 export default function SPARQLQueryApp() {
   const [userQuery, setUserQuery] = useState("");
   const [sparqlQuery, setSparqlQuery] = useState("");
@@ -29,15 +50,53 @@ export default function SPARQLQueryApp() {
   const [queryResult, setQueryResult] = useState<SPARQLResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [running, setRunning] = useState(false);
+  const [entityLinkingGroups, setEntityLinkingGroups] = useState<GroupedEntityUI[]>([]);
+  const [prevUsedEntities, setPrevUsedEntities] = useState<EntityWithType[]>([]);
 
   const exampleQuestions = [
-    "Who are the authors of 'NFDI4DS Gateway and Portal'?",
-    "In which institutions does Ricardo Usbeck work?",
-    "Question Answering papers published in ISWC."
+    "Who were the co-authors of Ashish Vaswani in the paper ‘Attention is all you need’?",
+    "Who are the highly cited coauthors of Hannah Bast?",
+    "Database papers published in ISWC."
   ];
+  const validateQuestion = async (question: string): Promise<{ valid: boolean; feedback?: string }> => {
+      try {
+        const checker_result = await fetch('/api/question_checker', {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: question }),
+        });
 
-  const handleExampleClick = (question: string) => {
-    setUserQuery(question);
+        if (!checker_result.ok) {
+          toast.error(`Error checking question. (HTTP ${checker_result.status})`);
+          return { valid: false, feedback: "API returned an error response." };
+        }
+
+        const checker_result_response = await checker_result.json();
+        const completeness = checker_result_response.completeness;
+
+        // optional delay for user feedback
+        await new Promise((res) => setTimeout(res, 300));
+
+        if (completeness) {
+          return { valid: true };
+        } else {
+          return {
+            valid: false,
+            feedback: checker_result_response.feedback ?? "Invalid Question!",
+          };
+        }
+      } catch (error: unknown) {
+        // toast.error(`Error validating question. (${error?.message || error})`);
+        // return { valid: false, feedback: "Network or server error occurred." };
+        let message = "Error validating question.";
+        if (error instanceof Error) {
+            message += ` (${error.message})`;
+        } else if (typeof error === "string") {
+            message += ` (${error})`;
+        }
+        toast.error(message);
+        return { valid: false, feedback: "Network or server error occurred." };
+      }
   };
 
   const updateSparqlQuery = (txt: string) => {
@@ -68,14 +127,31 @@ export default function SPARQLQueryApp() {
     setQueryDescription(newQueryDescription);
   };
 
-  const handleGenerateSPARQL = async () => {
-    if (!userQuery.trim()) {
+  const handleExampleClick = async (question: string) => {
+    setUserQuery(question);
+    setSparqlQuery("");
+    setQueryResult(null);
+    setEntityLinkingGroups([]);
+    //await handleGenerateSPARQL(question);
+  };
+
+  const handleGenerateSPARQL = async (exampleQuery?: string) => {
+    const query = exampleQuery || userQuery;
+    if (!query.trim()) {
       toast.error("Query input cannot be empty.");
       return;
     }
     setLoading(true);
+    setSparqlQuery("");
+    setQueryResult(null);
+    setEntityLinkingGroups([]);
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
+      const validation = await validateQuestion(query);
+      if (!validation.valid) {
+        toast.warning(validation.feedback || "Invalid question.");
+        // return;
+      }
       const response = await fetch('/api/generate_sparql', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -88,11 +164,91 @@ export default function SPARQLQueryApp() {
       }
       const confidence_string = `# Confidence_score: ${data.confidence_score}`;
       updateSparqlQuery(`${confidence_string}\n ${data.sparql}`);
+      const allEntities: EntityGroup[] = data.linked_entities || [];
+      const entitiesInSparql = data.entities_used_in_sparql || [];
+
+      setPrevUsedEntities(entitiesInSparql);
+      const groupedEntities = allEntities.map((group: EntityGroup): GroupedEntityUI => {
+        const options = group.entities.map(entity => ({
+           original_label: entity.original_label,
+           normalized_label: entity.normalized_label,
+           uri: entity.uri
+         }));
+
+        return {
+         entity_type: group.entity_type || "Unknown",
+         options,
+         selected: options[0]  // default selected entity
+        };
+      });
+
+      setEntityLinkingGroups(groupedEntities);
+      toast.message("SPARQL generated. You may select another entity below.");
     } catch (error) {
       console.error("SPARQL generation error:", error);
       toast.error("Error generating SPARQL.");
     } finally {
         setLoading(false)
+    }
+  };
+
+  const handleRegenerate = async () => {
+    if (!sparqlQuery || !userQuery) {
+      toast.error("Missing original SPARQL or question.");
+      return;
+    }
+    const selectedEntities: EntityWithType[] = entityLinkingGroups.map(group => ({
+      entity_type: group.entity_type,
+      normalized_label: group.selected?.normalized_label || "",
+      original_label: group.selected?.original_label || "",
+      uri: group.selected?.uri || "",
+    }));
+
+    if (selectedEntities.some(entity => !entity.uri)) {
+      toast.warning("Please select an entity in each group before regenerating.");
+      return;
+    }
+
+    const hasChanged = JSON.stringify(selectedEntities) !== JSON.stringify(prevUsedEntities);
+
+    if (!hasChanged) {
+      toast.info("Selected entities are the same as before. No regeneration needed.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const response = await fetch("/api/regenerate_sparql", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question: userQuery,
+          previous_entities: prevUsedEntities,
+          selected_entities: selectedEntities,
+          sparql: sparqlQuery
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("Regeneration request failed");
+      }
+
+      const data = await response.json();
+
+      if (data.sparql) {
+        setSparqlQuery(data.sparql);
+        setPrevUsedEntities(selectedEntities);
+        toast.success("SPARQL regenerated with new entity selections.");
+      } else {
+        toast.error("Regeneration returned no SPARQL.");
+      }
+
+    } catch (error) {
+      console.error("Regeneration error:", error);
+      toast.error("Failed to regenerate SPARQL.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -144,7 +300,12 @@ export default function SPARQLQueryApp() {
           <Input
             placeholder="Enter your query"
             value={userQuery}
-            onChange={(e) => setUserQuery(e.target.value)}
+            onChange={(e) => {
+              setUserQuery(e.target.value);
+              setSparqlQuery("");
+              setQueryResult(null);
+              setEntityLinkingGroups([]);
+            }}
           />
           <div className="flex flex-wrap gap-2">
             {exampleQuestions.map((question, index) => (
@@ -165,6 +326,45 @@ export default function SPARQLQueryApp() {
             )}
           </Button>
           {loading && <p className="text-sm text-gray-500">Generating SPARQL query...</p>}
+
+          {entityLinkingGroups.length > 0 && (
+            <div className="space-y-4">
+              {prevUsedEntities.length > 0 && (
+                 <div>
+                   <p className="text-sm font-semibold">Entities used in SPARQL:</p>
+                   <ul className="list-disc pl-5">
+                      {prevUsedEntities.map((entity, idx) => (
+                        <li key={idx}>
+                          [{entity.entity_type}] {entity.original_label} → {entity.uri}
+                        </li>
+                      ))}
+                   </ul>
+                 </div>
+               )}
+              <p className="text-sm font-semibold">Linked Entities (select to refine):</p>
+              {entityLinkingGroups.map((group, groupIndex) => (
+                <div key={groupIndex}>
+                  <label className="text-sm font-medium">{group.entity_type}</label>
+                  <select
+                    className="w-full border rounded p-2 mt-1"
+                    value={group.selected?.uri}
+                    onChange={(e) => {
+                      const selectedUri = e.target.value;
+                      const selected = group.options.find(opt => opt.uri === selectedUri)!;
+                      const updatedGroups = [...entityLinkingGroups];
+                      updatedGroups[groupIndex].selected = selected;
+                      setEntityLinkingGroups(updatedGroups);
+                    }}
+                  >
+                    {group.options.map((entity, idx) => (
+                      <option key={idx} value={entity.uri}>{entity.original_label}</option>
+                    ))}
+                  </select>
+                </div>
+              ))}
+              <Button className="mt-2" onClick={handleRegenerate}>Update SPARQL with Selected Entities</Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
