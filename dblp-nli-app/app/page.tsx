@@ -184,9 +184,6 @@ export default function SPARQLQueryApp() {
               </span>
               <Input placeholder="Describe your query" value={queryDescription}
                      onChange={(e) => updateQueryDescription(e.target.value)}/>
-              <Button className="ml-1" onClick={handleRunSPARQL} disabled={running}>
-                Save
-              </Button>
             </div>
 
             <div className="row flex">
