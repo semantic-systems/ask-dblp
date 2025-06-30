@@ -1,4 +1,6 @@
 import json
+import logging
+
 import llms
 import requests
 from config import Config
@@ -113,7 +115,7 @@ def question_to_sparql(question, llm='chatai'):
         # print(sparql_result)
         return sparql_result['sparql'], confidence, all_entities, selected_entities
     except Exception as e:
-        print(f"An error occurred during SPARQL Generation: {e}")
+        logging.error(f"An error occurred during SPARQL Generation: {e}", exc_info=e)
         return None
 
 
