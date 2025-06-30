@@ -22,14 +22,35 @@ interface SPARQLResult {
   };
 }
 
+type LinkedEntity = {
+  original_label: string;
+  normalized_label: string;
+  uri: string;
+};
+
+type EntityGroup = {
+  entity_type: string;
+  entities: LinkedEntity[];
+};
+
+type GroupedEntityUI = {
+  entity_type: string;
+  options: LinkedEntity[];
+  selected: LinkedEntity;
+};
+
+type EntityWithType = LinkedEntity & {
+  entity_type: string;
+};
+
 export default function SPARQLQueryApp() {
   const [userQuery, setUserQuery] = useState("");
   const [sparqlQuery, setSparqlQuery] = useState("");
-  const [queryResult, setQueryResult] = useState(null);
+  const [queryResult, setQueryResult] = useState<SPARQLResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [running, setRunning] = useState(false);
-  const [entityLinkingGroups, setEntityLinkingGroups] = useState([]);
-  const [prevUsedEntities, setPrevUsedEntities] = useState([]);
+  const [entityLinkingGroups, setEntityLinkingGroups] = useState<GroupedEntityUI[]>([]);
+  const [prevUsedEntities, setPrevUsedEntities] = useState<EntityWithType[]>([]);
 
   const exampleQuestions = [
     "Who were the co-authors of Ashish Vaswani in the paper ‘Attention is all you need’?",
@@ -63,8 +84,16 @@ export default function SPARQLQueryApp() {
             feedback: checker_result_response.feedback ?? "Invalid Question!",
           };
         }
-      } catch (err: any) {
-        toast.error(`Error validating question. (${err.message || err})`);
+      } catch (error: unknown) {
+        // toast.error(`Error validating question. (${error?.message || error})`);
+        // return { valid: false, feedback: "Network or server error occurred." };
+        let message = "Error validating question.";
+        if (error instanceof Error) {
+            message += ` (${error.message})`;
+        } else if (typeof error === "string") {
+            message += ` (${error})`;
+        }
+        toast.error(message);
         return { valid: false, feedback: "Network or server error occurred." };
       }
   };
@@ -89,11 +118,11 @@ export default function SPARQLQueryApp() {
     setEntityLinkingGroups([]);
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-//       const validation = await validateQuestion(query);
-//       if (!validation.valid) {
-//         toast.warning(validation.feedback || "Invalid question.");
-//         return;
-//       }
+      const validation = await validateQuestion(query);
+      if (!validation.valid) {
+        toast.warning(validation.feedback || "Invalid question.");
+        // return;
+      }
       const response = await fetch('/api/generate_sparql', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -106,11 +135,11 @@ export default function SPARQLQueryApp() {
       }
       const confidence_string = `# Confidence_score: ${data.confidence_score}`;
       setSparqlQuery(`${confidence_string}\n ${data.sparql}`);
-      const allEntities = data.linked_entities || [];
+      const allEntities: EntityGroup[] = data.linked_entities || [];
       const entitiesInSparql = data.entities_used_in_sparql || [];
 
       setPrevUsedEntities(entitiesInSparql);
-      const groupedEntities = allEntities.map((group) => {
+      const groupedEntities = allEntities.map((group: EntityGroup): GroupedEntityUI => {
         const options = group.entities.map(entity => ({
            original_label: entity.original_label,
            normalized_label: entity.normalized_label,
@@ -127,7 +156,6 @@ export default function SPARQLQueryApp() {
       setEntityLinkingGroups(groupedEntities);
       toast.message("SPARQL generated. You may select another entity below.");
     } catch (error) {
-
       console.error("SPARQL generation error:", error);
       toast.error("Error generating SPARQL.");
     } finally {
@@ -140,11 +168,11 @@ export default function SPARQLQueryApp() {
       toast.error("Missing original SPARQL or question.");
       return;
     }
-    const selectedEntities = entityLinkingGroups.map(group => ({
+    const selectedEntities: EntityWithType[] = entityLinkingGroups.map(group => ({
       entity_type: group.entity_type,
-      normalized_label: group.selected?.normalized_label ?? group.selected?.label,
-      original_label: group.selected?.original_label ?? group.selected?.label,
-      uri: group.selected?.uri,
+      normalized_label: group.selected?.normalized_label || "",
+      original_label: group.selected?.original_label || "",
+      uri: group.selected?.uri || "",
     }));
 
     if (selectedEntities.some(entity => !entity.uri)) {
@@ -293,7 +321,7 @@ export default function SPARQLQueryApp() {
                     value={group.selected?.uri}
                     onChange={(e) => {
                       const selectedUri = e.target.value;
-                      const selected = group.options.find(opt => opt.uri === selectedUri);
+                      const selected = group.options.find(opt => opt.uri === selectedUri)!;
                       const updatedGroups = [...entityLinkingGroups];
                       updatedGroups[groupIndex].selected = selected;
                       setEntityLinkingGroups(updatedGroups);
