@@ -163,7 +163,8 @@ export default function SPARQLQueryApp() {
         return;
       }
       const confidence_string = `# Confidence_score: ${data.confidence_score}`;
-      updateSparqlQuery(`${confidence_string}\n ${data.sparql}`);
+      const ask_dblp_string = `# ASK-DBLP: ${userQuery}`;
+      updateSparqlQuery(`${confidence_string}\n${ask_dblp_string} \n${data.sparql}`);
       const allEntities: EntityGroup[] = data.linked_entities || [];
       const entitiesInSparql = data.entities_used_in_sparql || [];
 

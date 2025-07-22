@@ -5,6 +5,90 @@ from openai import OpenAI
 from config import Config
 import numpy as np
 
+sparql_generation_function = [
+    {
+        "name": "sparql_generation_function",
+        "description": "Generate a SPARQL query for the given question.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "sparql": {
+                    "type": "string",
+                    "description": "SPARQL of a given question",
+                }
+            }
+        }
+
+    }
+]
+question_completeness_checker = [
+    {
+        "name": "question_completeness_checking_function",
+        "description": "Question Completeness Checker.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "completeness": {
+                    "type": "string",
+                    "description": "Question completeness validation response",
+                }
+            }
+        }
+
+    }
+]
+question_generation_function = [
+    {
+        "name": "question_generation_function",
+        "description": "Processes a list of query outputs including unique question id, original query, formal question, and entities.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "outputs": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string",
+                                "description": "A unique identifier for the query."
+                            },
+                            "original_query": {
+                                "type": "string",
+                                "description": "The user's natural language query."
+                            },
+                            "formal_question": {
+                                "type": "string",
+                                "description": "A formalized version of the user's question."
+                            },
+                            "entities": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mention": {
+                                            "type": "string",
+                                            "description": "Entity as mentioned in the question."
+                                        },
+                                        "uri": {
+                                            "type": "string",
+                                            "description": "The knowledge base URI for the entity."
+                                        }
+                                    },
+                                    "required": ["mention", "uri"]
+                                }
+                            }
+                        },
+                        "required": ["id", "original_query", "formal_question", "entities"]
+                    }
+                }
+            },
+            "required": ["outputs"]
+        }
+    }
+]
+
+
 def compute_confidence_score(logprobs):
     all_logprobs = []
     for token_info in logprobs:
@@ -34,7 +118,7 @@ def llama(user_prompt, sys_prompt_string="You are an experienced knowledge graph
     if response.status_code == 200:
         response_data = response.json()
         # print(f"Model: {response_data["model"]}")
-        print(f"Response: {response_data}")
+        # print(f"Response: {response_data}")
         if 'generated_text' in response_data:
             return response_data['generated_text']
         else:
@@ -46,44 +130,14 @@ def llama(user_prompt, sys_prompt_string="You are an experienced knowledge graph
 
 
 def chatai_models(prompt, model, function_call_flag = 1):
-    sparql_generation_function = [
-        {
-            "name": "sparql_generation_function",
-            "description": "Generate a SPARQL query for the given question.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "sparql": {
-                        "type": "string",
-                        "description": "SPARQL of a given question",
-                    }
-                }
-            }
-
-        }
-    ]
-    question_completeness_checker = [
-        {
-            "name": "question_completeness_checker",
-            "description": "Question Completeness Checker.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "completeness": {
-                        "type": "string",
-                        "description": "Question completeness validation response",
-                    }
-                }
-            }
-
-        }
-    ]
     function_call = sparql_generation_function
-    flag = False
-    if function_call_flag != 1:
+    flag = True
+    if function_call_flag == 2:
         function_call = question_completeness_checker
-        flag = True
-
+        flag = False
+    elif function_call_flag == 3:
+        function_call = question_generation_function
+        flag = False
     api_key = Config.LLMS['chatai']['chatai_api_key']
     base_url = Config.LLMS['chatai']['url']
     model = model # Config.LLMS['chatai']['model']
@@ -104,55 +158,27 @@ def chatai_models(prompt, model, function_call_flag = 1):
         logprobs=True
     )
     try:
-        result = json.loads(chat_completion.choices[0].message.content)
-        # print(result)
-        if flag:
-            return result
+        if hasattr(chat_completion.choices[0].message, 'function_call') and \
+                hasattr(chat_completion.choices[0].message.function_call, 'arguments'):
+            args = chat_completion.choices[0].message.function_call.arguments
+        else:
+            args = chat_completion.choices[0].message.content
+        result = json.loads(args)
         logprobs = chat_completion.choices[0].logprobs.content
         confidence_score = compute_confidence_score(logprobs)
-        # print("Confidence score:", confidence_score)
         return result, confidence_score
     except Exception as e:
         print(f"An error occurred while generating response: {e}")
-        return None
+        return "", 0.0
 
 
 def chatgpt(prompt, function_call_flag = 1):
-    sparql_generation_function = [
-        {
-            "name": "sparql_generation_function",
-            "description": "Generate a SPARQL query for the given question.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "sparql": {
-                        "type": "string",
-                        "description": "SPARQL of a given question",
-                    }
-                }
-            }
 
-        }
-    ]
-    question_completeness_checker = [
-        {
-            "name": "question_completeness_checking_function",
-            "description": "Question Completeness Checker.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "completeness": {
-                        "type": "string",
-                        "description": "Question completeness validation response",
-                    }
-                }
-            }
-
-        }
-    ]
     function_call = sparql_generation_function
-    if function_call_flag != 1:
+    if function_call_flag == 2:
         function_call = question_completeness_checker
+    elif function_call_flag == 3:
+        function_call = question_generation_function
 
     model = Config.LLMS['openai']['model']
     api_key = Config.LLMS['openai']['open_api_key']
@@ -169,7 +195,7 @@ def chatgpt(prompt, function_call_flag = 1):
     )
     try:
         json_response = json.loads(completion.choices[0].message.function_call.arguments)
-        print(json_response)
+        # print(json_response)
         return json_response
     except Exception as e:
         print(f"An error occurred: {e}")

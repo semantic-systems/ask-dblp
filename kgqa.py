@@ -65,7 +65,7 @@ def entity_linker(question):
     headers = {"Content-Type": "application/json"}
     data = {"question": question}
     try:
-        response = requests.post(entity_linker_url, json=data, headers=headers, timeout=100)
+        response = requests.post(entity_linker_url, json=data, headers=headers, timeout=1000)
         response.raise_for_status()
         if response:
             all_entities, selected_entities = extract_entities_by_group(response.json())
@@ -102,9 +102,13 @@ def get_question_to_sparql_prompt(question, selected_entities=[]):
 
 
 def question_to_sparql(question, llm='chatai'):
+
     try:
         all_entities, selected_entities = entity_linker(question)
-        # print(f"{all_entities} \n {selected_entities}")
+        if not all_entities and selected_entities:
+            # print(f"{all_entities} \n {selected_entities}")
+            all_entities = []
+            selected_entities = []
         prompt = get_question_to_sparql_prompt(question, selected_entities)
         # if llm == 'chatgpt':
         #     sparql = llms.chatgpt(prompt)
@@ -112,11 +116,13 @@ def question_to_sparql(question, llm='chatai'):
         # sparql_result = llama(prompt)
         chatai_llm_model = 'qwen2.5-coder-32b-instruct'
         sparql_result, confidence = llms.chatai_models(prompt=prompt, model=chatai_llm_model)
-        # print(sparql_result)
-        return sparql_result['sparql'], confidence, all_entities, selected_entities
+        sparql = ''
+        if 'sparql' in sparql_result:
+            sparql = sparql_result['sparql']
+        return sparql, confidence, all_entities, selected_entities
     except Exception as e:
         logging.error(f"An error occurred during SPARQL Generation: {e}", exc_info=e)
-        return None
+        return "", 0.0, [], []
 
 
 def question_checker(question):
