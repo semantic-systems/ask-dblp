@@ -31,7 +31,7 @@ def extract_entities_by_group(result):
     for entity in result['entitylinkingresults']:
         if not entity['result']:
             continue
-        entity_type = ", ".join(entity.get('type', [])) or "Unknown"
+        entity_type = "".join(entity.get('type', [])) or "Unknown"
         entries = []
         for entry in entity['result']:
             original_label = entry[1][1]
