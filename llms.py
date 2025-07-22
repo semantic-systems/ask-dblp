@@ -131,12 +131,13 @@ def llama(user_prompt, sys_prompt_string="You are an experienced knowledge graph
 
 def chatai_models(prompt, model, function_call_flag = 1):
     function_call = sparql_generation_function
-    flag = False
+    flag = True
     if function_call_flag == 2:
         function_call = question_completeness_checker
-        flag = True
+        flag = False
     elif function_call_flag == 3:
         function_call = question_generation_function
+        flag = False
     api_key = Config.LLMS['chatai']['chatai_api_key']
     base_url = Config.LLMS['chatai']['url']
     model = model # Config.LLMS['chatai']['model']
@@ -157,17 +158,18 @@ def chatai_models(prompt, model, function_call_flag = 1):
         logprobs=True
     )
     try:
-        result = json.loads(chat_completion.choices[0].message.content)
-        # print(result)
-        if flag:
-            return result
+        if hasattr(chat_completion.choices[0].message, 'function_call') and \
+                hasattr(chat_completion.choices[0].message.function_call, 'arguments'):
+            args = chat_completion.choices[0].message.function_call.arguments
+        else:
+            args = chat_completion.choices[0].message.content
+        result = json.loads(args)
         logprobs = chat_completion.choices[0].logprobs.content
         confidence_score = compute_confidence_score(logprobs)
-        # print("Confidence score:", confidence_score)
         return result, confidence_score
     except Exception as e:
         print(f"An error occurred while generating response: {e}")
-        return None
+        return "", 0.0
 
 
 def chatgpt(prompt, function_call_flag = 1):
