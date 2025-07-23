@@ -1,5 +1,5 @@
 
-# DBLP-NLI: A natural language interface for DBLP KG.
+# ASK-DBLP: A natural language interface for DBLP KG.
 
 ## How  to run
 
