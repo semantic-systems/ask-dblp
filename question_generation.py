@@ -1,10 +1,9 @@
-import openai
 import json
 from typing import List
 import llms
 import utils
 import csv
-# -- PROMPT COMPONENTS --
+from config import Config
 
 INPUT_FORMAT = '''\
 Input format: JSON objects, each with at least query and sparql fields.
@@ -157,6 +156,27 @@ def main(input_filename, output_filename, batch_size=10):
         utils.write_to_json(output_data,output_filename)
 
 
+def generate_answer(out_file="log_data/question_sparql_answer.json"):
+    questions = utils.load_json_data("log_data/generated_questions.json")
+    question_sparql = utils.load_json_data("log_data/filter_queries_by_jaccard_similarity.json")
+    questions_sparql_ids = {}
+    question_sparql_answer = utils.load_json_data(out_file)
+    for item in question_sparql:
+        questions_sparql_ids.update({str(item['id']):item['query']})
+
+    for qs in questions[516:]:
+        if qs['entities']:
+            sparql = questions_sparql_ids[qs['id']]
+            result = utils.run_sparql_query(sparql_endpoint=Config.SPARQL_ENDPOINT,sparql_query=sparql)
+            if result:
+                answer = utils.extruct_values(result)
+                qs.update({'answer':answer, 'sparql':sparql})
+                question_sparql_answer.append(qs)
+                utils.write_to_json(question_sparql_answer,out_file)
+
+
+
 if __name__ == "__main__":
     # convert_csv_to_json("log_data/filter_queries_by_jaccard_2.csv", "log_data/filter_queries_by_jaccard_similarity.json")
-    main("log_data/filter_queries_by_jaccard_similarity.json", "log_data/generated_questions.json", batch_size=2)
+    # main("log_data/filter_queries_by_jaccard_similarity.json", "log_data/generated_questions.json", batch_size=2)
+    generate_answer()
