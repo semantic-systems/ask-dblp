@@ -35,20 +35,20 @@ def save_cache():
 @app.route('/question_checker',methods=['POST'])
 def question_checker():
    try:
-      data = request.json
-      user_query = data.get("query", "")
-      validation_result = kgqa.question_checker(user_query)
-      completeness = feedback = ""
-      if 'completeness' in validation_result:
-          completeness = validation_result['completeness']
-      if 'feedback' in completeness:
-          feedback = validation_result['feedback']
-      if completeness =='complete':
-         return jsonify({'completeness': True})
-      else:
-         return jsonify({'completeness': True, 'feedback':feedback})
+       data = request.json
+       user_query = data.get("query", "")
+       validation_result = kgqa.question_checker(user_query)
+       completeness = feedback = ""
+       if 'completeness' in validation_result:
+           completeness = validation_result['completeness']
+       if 'feedback' in completeness:
+           feedback = validation_result['feedback']
+       if completeness =='complete':
+           return jsonify({'completeness': True})
+       else:
+           return jsonify({'completeness': False, 'feedback': feedback})
    except Exception as e:
-      return jsonify({"error": f"An exception occurred: {str(e)}"}), 500
+       return jsonify({"error": f"An exception occurred: {str(e)}"}), 500
 
 
 @app.route('/entity_linking', methods=['POST'])

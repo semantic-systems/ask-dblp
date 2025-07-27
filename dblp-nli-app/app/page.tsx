@@ -54,9 +54,11 @@ export default function SPARQLQueryApp() {
   const [prevUsedEntities, setPrevUsedEntities] = useState<EntityWithType[]>([]);
 
   const exampleQuestions = [
-    "Who were the co-authors of Ashish Vaswani in the paper ‘Attention is all you need’?",
-    "Who are the highly cited coauthors of Hannah Bast?",
-    "Database papers published in ISWC."
+    "Top 10 most frequent authors from Germany who have published at the International Semantic Web Conference (ISWC).",
+    "Which publications from the International Semantic Web Conference are the highly cited?",
+    "Database papers published in the Semantic Web Journal.",
+    "Who are the highly cited coauthors of Hannah Bast?"
+
   ];
   const validateQuestion = async (question: string): Promise<{ valid: boolean; feedback?: string }> => {
       try {

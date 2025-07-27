@@ -1,4 +1,20 @@
 import json
+from SPARQLWrapper import SPARQLWrapper, JSON
+
+def run_sparql_query(sparql_endpoint, sparql_query, param='', flag=False):
+    if flag:
+        sparql_query = sparql_query % param
+    try:
+        sparql = SPARQLWrapper(sparql_endpoint)
+        sparql.setQuery(sparql_query)
+        sparql.setReturnFormat(JSON)
+        result = sparql.query().convert()
+        return result
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+        return None
+    return
+
 
 def load_json_data(file_name):
     try:
