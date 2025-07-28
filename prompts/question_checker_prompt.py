@@ -1,32 +1,4 @@
 from langchain.prompts import PromptTemplate
-# A question may be incomplete if:
-# - It includes only a first or last name without full author details.
-# - It refers to something vague like "this paper", "he", or "it".
-# - It lacks key information like the name of a paper, author, venue, or year.
-# - It uses subjective terms like "best" without specifying a criterion (e.g., citations, awards).
-# **Example 1**
-#   Question: *What papers did John write?*
-#   Response: *Your question is unclear — could you please specify the full name of the author? “John” is too ambiguous.*
-#
-# ---
-#
-# **Example 2**
-#   Question: *What is the best KGQA paper?*
-#   Response: *“Best” can mean different things (e.g., most cited, award-winning, or highest benchmark). Could you clarify what you mean by “best”?*
-#
-# ---
-#
-# **Example 3**
-#    Question: *When was the conference?*
-#    Response: *Could you specify which conference you're referring to? The name or acronym is missing.*
-#
-# ---
-#
-# **Example 4**
-# Question: *Tell me more about it.*
-# Response: *Could you clarify what “it” refers to? Please include the full name of the paper or topic.*
-#
-# ---
 
 prompt_template = """
 You are an assistant that checks if a question is complete, specific, and meaningful enough to be answered using a knowledge graph.
