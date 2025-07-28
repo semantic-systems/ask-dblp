@@ -7,6 +7,11 @@ import { Input } from "@/components/ui/input";
 import {toast, Toaster} from "sonner";
 import { Loader2 } from "lucide-react";
 import {MdOutlineThumbDown, MdOutlineThumbUp} from 'react-icons/md';
+import Image from "next/image";
+import CodeMirror from "@uiw/react-codemirror";
+import { StreamLanguage } from "@codemirror/language";
+import { sparql } from "@codemirror/legacy-modes/mode/sparql";
+import { EditorView } from "@codemirror/view";
 
 interface SPARQLResult {
   head: {
@@ -54,11 +59,9 @@ export default function SPARQLQueryApp() {
   const [prevUsedEntities, setPrevUsedEntities] = useState<EntityWithType[]>([]);
 
   const exampleQuestions = [
-    "Top 10 most frequent authors from Germany who have published at the International Semantic Web Conference (ISWC).",
-    "Which publications from the International Semantic Web Conference are the highly cited?",
+    "Top 10 most frequent authors who have published at the International Semantic Web Conference (ISWC).",
     "Database papers published in the Semantic Web Journal.",
     "Who are the highly cited coauthors of Hannah Bast?"
-
   ];
   const validateQuestion = async (question: string): Promise<{ valid: boolean; feedback?: string }> => {
       try {
@@ -289,19 +292,27 @@ export default function SPARQLQueryApp() {
   return (
     //<div className="max-w-2xl mx-auto p-6 space-y-4">
     <div className="max-w-6xl mx-auto overflow-x-auto">
+      <header className="flex items-center space-x-4 p-4 border-b">
+        <Image
+          src="/ask-dblp-logo.png"
+          alt="ASK DBLP Logo"
+          width={300}
+          height={100}
+          priority
+        />
+      </header>
       <Card className="mb-4">
         <CardContent className="p-4 space-y-2">
-          <p className="text-justify text-sm text-gray-600">
+          <p className="text-justify text-sm text-gray-600 font-bold">
             Welcome to ASK-DBLP! <br/> <br/>
             ASK-DBLP offers a natural language interface (NLI) that allows users to question the DBLP Knowledge Graph.
             The system generates a corresponding SPARQL query, which you can review and edit. Once ready, it executes the query against the DBLP SPARQL endpoint and displays the results. <br/>
+          </p>
+          <p className="text-sm text-gray-600 font-bold">
 
           </p>
-          <p className="text-sm text-gray-600">
-             Type your question or choose from the sample questions below.
-          </p>
           <Input
-            placeholder="Enter your query"
+            placeholder="Type your question or select from the sample questions below."
             value={userQuery}
             onChange={(e) => {
               setUserQuery(e.target.value);
@@ -310,11 +321,12 @@ export default function SPARQLQueryApp() {
               setEntityLinkingGroups([]);
             }}
           />
-          <div className="flex flex-wrap gap-2">
+          <div className="overflow-x-auto flex flex-col items-start gap-2 mt-2 py-2 px-1">
             {exampleQuestions.map((question, index) => (
               <Button
                 key={index}
                 variant="outline"
+                className="text-left w-auto"
                 onClick={() => handleExampleClick(question)}
               >
                 {question}
@@ -374,11 +386,20 @@ export default function SPARQLQueryApp() {
       {sparqlQuery && (
         <Card className="mb-4">
           <CardContent className="p-4 space-y-2">
-            <Textarea
-              className="w-full"
-              rows={10}
+            <CodeMirror
               value={sparqlQuery}
-              onChange={(e) => updateSparqlQuery(e.target.value)}
+              height="300px"
+              basicSetup={{
+                lineNumbers: true,
+                highlightActiveLineGutter: true,
+                highlightActiveLine: true,
+              }}
+              extensions={[
+                StreamLanguage.define(sparql),
+                EditorView.lineWrapping,
+              ]}
+              onChange={(value) => updateSparqlQuery(value)}
+              theme="light"
             />
 
             <div className="row flex">
@@ -439,13 +460,25 @@ export default function SPARQLQueryApp() {
                 </thead>
                 <tbody>
                   {queryResult.results.bindings.map((binding, rowIndex) => (
-                    <tr key={rowIndex} className="hover:bg-gray-50">
-                      <td className="border border-gray-300 px-4 py-2">{rowIndex + 1}</td>
-                      {queryResult.head.vars.map((varName, colIndex) => (
-                        <td key={colIndex} className="border border-gray-300 px-4 py-2">
-                          {binding[varName]?.value || ""}
-                        </td>
-                      ))}
+                    <tr key={rowIndex} className="border-t">
+                      <td className="p-2 text-sm text-gray-600 font-mono">{rowIndex + 1}.</td>
+                      {queryResult.head.vars.map((varName, colIndex) => {
+                        const valueObj = binding[varName];
+                        const value = valueObj?.value || "";
+                        const isUri = valueObj?.type === "uri";
+
+                        return (
+                          <td key={colIndex} className="p-2 text-sm text-gray-800">
+                            {isUri ? (
+                              <a href={value} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                                {value}
+                              </a>
+                            ) : (
+                              value
+                            )}
+                          </td>
+                        );
+                      })}
                     </tr>
                   ))}
                 </tbody>
