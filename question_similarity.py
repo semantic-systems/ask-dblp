@@ -7,8 +7,21 @@ import utils
 import warnings
 warnings.filterwarnings("ignore", message="`encoder_attention_mask` is deprecated")
 
+train_set = utils.load_json_data("data/train/questions.json")
+train_set_list = train_set.get('questions')
+training_data = [(item["id"], utils.get_value_from_dict(item["paraphrased_question"], "string")) for item in
+                 train_set_list]
+
+qid_with_entities = utils.load_json_data("data/train/train_qid_with_entities.json")
+qid_with_sparql = utils.load_json_data("data/train/train_qid_with_sparql.json")
+# train_set = utils.load_json_data("experiment/ask-dblp/train_data.json")
+# training_data = [(item["id"], item["formal_question"]) for item in train_set]
+#
+# qid_with_entities = {item["id"]:item["entities"] for item in train_set}
+# qid_with_sparql = {item["id"]:item["sparql"] for item in train_set}
+
 class QuestionSimilarityIdentifier:
-    def __init__(self, model_name='all-MiniLM-L6-v2', model_save_path='qsim_model'):
+    def __init__(self, model_name='all-MiniLM-L6-v2', model_save_path='qsim_model_ask_dblp'):
         """
         Initialize or load existing model and data.
 
@@ -87,7 +100,7 @@ class QuestionSimilarityIdentifier:
         else:
             print("Data file not found. Skipping data load.")
 
-    def find_similar(self, new_question, top_k=5, threshold=0.7):
+    def find_similar(self, new_question, top_k=7, threshold=0.6):
         """
         Find top-k most similar questions to the new question.
 
@@ -99,8 +112,8 @@ class QuestionSimilarityIdentifier:
         Returns:
           List of tuples (id, question, similarity_score)
         """
-        if self.model is None or self.train_question_embeddings is None:
-            raise ValueError("Model or embeddings not loaded. Please fit the model first.")
+        # if self.model is None or self.train_question_embeddings is None:
+        #     raise ValueError("Model or embeddings not loaded. Please fit the model first.")
 
         new_emb = self.model.encode([new_question], convert_to_tensor=True)
 
@@ -119,6 +132,7 @@ class QuestionSimilarityIdentifier:
             results.append((self.train_question_ids[idx], self.train_questions[idx], score))
             if len(results) >= top_k:
                 break
+
         return results
 
     def update_if_new_data(self, new_questions_with_ids):
@@ -152,20 +166,32 @@ class QuestionSimilarityIdentifier:
         return True
 
 
-def main():
-    train_set = utils.load_json_data("log_data/generated_questions.json")
-    initial_data = [(item['id'], item['formal_question']) for item in train_set]
+def identify_similar_questions(qsim, question):
+    results = qsim.find_similar(question, top_k=7, threshold=0.6)
+    results_with_sparql = []
+    if results:
+        for qids, qu, score in results:
+            results_with_sparql.append((qids, qu, score, qid_with_sparql[qids], qid_with_entities[qids]))
+        return results_with_sparql
+    return []
 
+
+def prepare_data_for_training():
+    qid_with_sparql = {item2["id"]: utils.get_value_from_dict(item2["query"], "sparql") for item2 in train_set}
+    qid_with_entities =  {item3["id"]: item3["entities"] for item3 in train_set}
+    utils.write_to_json(qid_with_sparql,"experiment/train_qid_with_sparql.json")
+    utils.write_to_json(qid_with_entities, "experiment/train_qid_with_entities.json")
+
+def main():
     qsim = QuestionSimilarityIdentifier()
 
     # Train if needed (no saved model)
     if qsim.model is None:
-        qsim.fit(initial_data)
+        qsim.fit(training_data)
 
     # Query similar questions
     query_question = "Who are the authors of Ways to study Python programming?"
-    results = qsim.find_similar(query_question, top_k=3, threshold=0.7)
-    return results
+    results = qsim.find_similar(query_question, top_k=3, threshold=0.3)
     print("Similar questions found:")
     for qid, question, score in results:
         print(f"ID: {qid} | Score: {score:.3f} | Question: {question}")
@@ -188,5 +214,4 @@ def main():
 
 if __name__ == '__main__':
     main()
-    # x = torch.tensor([1.0, 2.0])
-    # print(("Tensor Numpy: ", x.numpy()))
+    # prepare_data_for_training()

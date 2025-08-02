@@ -1,8 +1,6 @@
 import argparse
 import json
-import math
-from collections import Counter
-import sys
+
 
 def load_gold_stardard(gold_path):
     gold_answers = dict()
@@ -64,8 +62,8 @@ def arg_parser():
 
 
 def main(args):
-    system_path = args.so
-    gt_path = args.gt
+    system_path = "experiment/ask-dblp/test_set_answer_predictions_id_answer.json"  # args.so
+    gt_path = "experiment/ask-dblp/test_question_answer_pairs.json"  # args.gt
     print(f"Config:\n\tGround truth: {gt_path}\n\tSystem path: {system_path}")
     gold_answers = load_gold_stardard(gt_path)
     system_answers = load_system_answers(system_path)

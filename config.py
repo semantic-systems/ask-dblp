@@ -10,6 +10,8 @@ class Config:
     OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
     CHATAI_API_KEY = os.environ.get("CHATAI_API_KEY", "")
     SPARQL_ENDPOINT = os.environ.get("SPARQL_ENDPOINT", "")
+    LOCAL_SPARQL_ENDPOINT = os.environ.get("LOCAL_SPARQL_ENDPOINT", "")
+    DBLP_QUAD_1_SPARQL_ENDPOINT = os.environ.get("DBLP_QUAD_1_SPARQL_ENDPOINT", "")
     DBLP_ENTITY_LINKER = os.environ.get("DBLP_ENTITY_LINKER", "")
     LLMS = {
         "openai": {

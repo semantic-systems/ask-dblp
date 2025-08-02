@@ -1,6 +1,11 @@
 import json
 from SPARQLWrapper import SPARQLWrapper, JSON
 
+def get_value_from_dict(data, key):
+    if key in data:
+        return data[key]
+
+
 def run_sparql_query(sparql_endpoint, sparql_query, param='', flag=False):
     if flag:
         sparql_query = sparql_query % param

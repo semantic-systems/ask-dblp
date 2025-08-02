@@ -137,16 +137,6 @@ def process_batch(input_batch):
 
 def main(input_filename, output_filename, batch_size=10):
     input_data = utils.load_json_data(file_name=input_filename)
-    # input_data = [{
-    #                 "q_id": 392320,
-    #                 "question": "Highly cited coauthors of Khafidz Asshidqi Al Awaby",
-    #                 "query": "PREFIX dblp: <https://dblp.org/rdf/schema#> PREFIX cito: <http://purl.org/spar/cito/> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> SELECT ?name ?affiliation (COUNT(DISTINCT ?cite) as ?cites) (?coauthor as ?dblp) (SAMPLE(?orcids) as ?orcid) WHERE {   VALUES ?author { <https://dblp.org/pid/398/5193> }   ?copubl dblp:authoredBy ?author .   ?copubl dblp:authoredBy ?coauthor .   FILTER ( ?author != ?coauthor ) .   ?coauthor rdfs:label ?name .   OPTIONAL { ?coauthor dblp:orcid ?orcids . }   OPTIONAL { ?coauthor dblp:primaryAffiliation ?affiliation . }   ?publ dblp:authoredBy ?coauthor .   ?publ dblp:omid ?omid .   ?cite cito:hasCitedEntity ?omid . } GROUP BY ?name ?affiliation ?coauthor ORDER BY DESC(?cites) LIMIT 10"
-    #               },
-    #               {
-    #                 "q_id": 392486,
-    #                 "question": "Number-of-authors statistic for Ihsan Ayyub Qazi",
-    #                 "query": "PREFIX dblp: <https://dblp.org/rdf/schema#> SELECT ?number_of_authors (COUNT(?number_of_authors) AS ?freq) WHERE {   VALUES ?pers { <https://dblp.org/pid/98/776> } .   ?publ dblp:authoredBy ?pers .   ?publ dblp:numberOfCreators ?number_of_authors . } GROUP BY ?number_of_authors ORDER BY ?number_of_authors"
-    #               }]
     output_data = utils.load_json_data(file_name=output_filename)
     id_counter = 0
     for batch in chunk_list(input_data[32:], batch_size):
@@ -175,8 +165,21 @@ def generate_answer(out_file="log_data/question_sparql_answer.json"):
                 utils.write_to_json(question_sparql_answer,out_file)
 
 
+def update_data():
+    data = utils.load_json_data("log_data/question_sparql_answer.json")
+    id_sparql_pairs = {}
+    filtered_data = []
+    for item in data:
+        if item["id"] == "373251":
+            continue
+        filtered_data.append(item)
+        id_sparql_pairs.update({item["id"]:item["sparql"]})
+    utils.write_to_json(filtered_data,"log_data/question_sparql_answer_updated.json")
+    utils.write_to_json(id_sparql_pairs,"log_data/question_id_sparql_pairs.json")
+
 
 if __name__ == "__main__":
     # convert_csv_to_json("log_data/filter_queries_by_jaccard_2.csv", "log_data/filter_queries_by_jaccard_similarity.json")
     # main("log_data/filter_queries_by_jaccard_similarity.json", "log_data/generated_questions.json", batch_size=2)
-    generate_answer()
+    # generate_answer()
+    update_data()

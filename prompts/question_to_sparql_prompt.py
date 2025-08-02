@@ -12,6 +12,9 @@ Select the appropriate property URI while creating the SPARQL from the Knowledge
 ===Examples
 {examples}
 
+===Similar Questions
+{similar_questions_pool}
+
 ===Response Guidelines
 1. If the provided context is sufficient, please generate a valid SPARQL query without any explanations for the question.
 2. If the provided context is insufficient, please explain why it can't be generated.

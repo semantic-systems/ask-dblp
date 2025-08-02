@@ -9,7 +9,7 @@ Your task is to determine whether a user's question is sufficiently clear for an
 ===Examples of complete questions
   Question: what are the papers about embeddings published in 2020 at ACL?
             Who are the authors of Attention is all you need?
-            Where did Tim Berners-Lee works?
+            Where did Tim Berners-Lee work?
             Among the papers published in ISWC, which one has the highest citation?
             When was University of Hamburg established?
             Top 10 publications in ISWC.

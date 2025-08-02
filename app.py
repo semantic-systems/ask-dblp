@@ -7,6 +7,7 @@ import sys
 import os
 import json
 import kgqa
+import question_similarity
 
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ""))
 sys.path.append(parent_dir)
@@ -70,7 +71,8 @@ def generate_sparql():
       data = request.json
       user_query = data.get("query", "")
       # entities = kgqa.entity_linker(user_query)
-      sparql_query, confidence, linked_entities, selected_entities = kgqa.question_to_sparql(user_query)
+      qsim = question_similarity.QuestionSimilarityIdentifier()
+      sparql_query, confidence, linked_entities, selected_entities = kgqa.question_to_sparql(qsim, user_query)
       # query_cache[user_query] = {"sparql": sparql_query, "confidence_score": confidence}
       # save_cache()
       return jsonify({"sparql": sparql_query, "confidence_score": confidence,
