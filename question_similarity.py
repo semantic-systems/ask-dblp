@@ -7,21 +7,16 @@ import utils
 import warnings
 warnings.filterwarnings("ignore", message="`encoder_attention_mask` is deprecated")
 
-train_set = utils.load_json_data("data/train/questions.json")
-train_set_list = train_set.get('questions')
-training_data = [(item["id"], utils.get_value_from_dict(item["paraphrased_question"], "string")) for item in
-                 train_set_list]
+train_set = utils.load_json_data("log_data/question_sparql_answer_updated.json")
+#train_set_list = train_set.get('questions')
+training_data = [(item["id"], item["formal_question"]) for item in
+                 train_set]
 
-qid_with_entities = utils.load_json_data("data/train/train_qid_with_entities.json")
-qid_with_sparql = utils.load_json_data("data/train/train_qid_with_sparql.json")
-# train_set = utils.load_json_data("experiment/ask-dblp/train_data.json")
-# training_data = [(item["id"], item["formal_question"]) for item in train_set]
-#
-# qid_with_entities = {item["id"]:item["entities"] for item in train_set}
-# qid_with_sparql = {item["id"]:item["sparql"] for item in train_set}
+qid_with_entities = utils.load_json_data("log_data/training/train_qid_with_entities.json")
+qid_with_sparql = utils.load_json_data("log_data/training/train_qid_with_sparql.json")
 
 class QuestionSimilarityIdentifier:
-    def __init__(self, model_name='all-MiniLM-L6-v2', model_save_path='qsim_model_ask_dblp'):
+    def __init__(self, model_name='all-MiniLM-L6-v2', model_save_path='qsim_model'):
         """
         Initialize or load existing model and data.
 
@@ -177,10 +172,12 @@ def identify_similar_questions(qsim, question):
 
 
 def prepare_data_for_training():
-    qid_with_sparql = {item2["id"]: utils.get_value_from_dict(item2["query"], "sparql") for item2 in train_set}
+    # qid_with_sparql = {item2["id"]: utils.get_value_from_dict(item2["query"], "sparql") for item2 in train_set}
+    qid_with_sparql = {item2["id"]:item2["sparql"] for item2 in train_set}
+
     qid_with_entities =  {item3["id"]: item3["entities"] for item3 in train_set}
-    utils.write_to_json(qid_with_sparql,"experiment/train_qid_with_sparql.json")
-    utils.write_to_json(qid_with_entities, "experiment/train_qid_with_entities.json")
+    utils.write_to_json(qid_with_sparql,"log_data/training/train_qid_with_sparql.json")
+    utils.write_to_json(qid_with_entities, "log_data/training/train_qid_with_entities.json")
 
 def main():
     qsim = QuestionSimilarityIdentifier()
