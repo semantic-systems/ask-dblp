@@ -174,3 +174,9 @@ cython_debug/
 
 log_data/
 sparql_cache.json
+experiment/
+node_modules/
+olympics/
+qsim_model/
+qsim_model_ask_dblp/
+evaluation.py
