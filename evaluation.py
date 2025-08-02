@@ -184,10 +184,6 @@ if __name__ == '__main__':
     #result = utils.run_sparql_query(sparql_endpoint=LOCAL_SPARQL_ENDPOINT,sparql_query=sparql)
     # print(result)
     #print(utils.extruct_values(result))
-    # eval_ask_dblp("experiment/ask-dblp/test_data.json")
+    eval_ask_dblp("experiment/ask-dblp/test_data.json")
     # postprocess_predictions_for_eval_ask_dblp()
     # random_split("log_data/question_sparql_answer_updated.json")
-    truncate_answers(system_pred=utils.load_json_data("experiment/ask-dblp/test_set_answer_predictions_id_answer.json"),
-                     gold=utils.load_json_data("experiment/ask-dblp/test_question_answer_pairs.json"))
-    # truncate_answers(system_pred=utils.load_json_data("experiment/DBLP-QuAD/answer_predictions_id_answer.json"),
-    #                  gold=utils.load_json_data("experiment/DBLP-QuAD/test/question_answer_pairs.json"))
