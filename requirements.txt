@@ -6,8 +6,4 @@ langchain
 node
 flask_cors
 python-dotenv
-transformers<4.55.0
-sentence-transformers==5.0.0
-torch>=2.2.0
-numpy<2.0
-scikit-learn
+numpy
