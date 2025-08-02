@@ -8,6 +8,7 @@ from prompts import question_to_sparql_prompt, question_checker_prompt
 import dblp_schema
 import utils
 import re
+import question_similarity
 
 def clean_label(label, entity_type):
     if "Publication" in entity_type:
@@ -80,7 +81,7 @@ def extract_triple_quoted_string(text):
     return match.group(1) if match else None
 
 
-def get_question_to_sparql_prompt(question, selected_entities=[]):
+def get_question_to_sparql_prompt(question, selected_entities=[], similar_questions_pool={}):
     examples = utils.get_examples("build_sparql")
     selected_entities_string = ''
     if selected_entities:
@@ -96,20 +97,28 @@ def get_question_to_sparql_prompt(question, selected_entities=[]):
         dblp_schema=dblp_schema.properties_uri_and_description,
         examples=examples,
         entities=selected_entities_string,
+        similar_questions_pool=similar_questions_pool,
     )
     # print(prompt)
     return prompt
 
 
-def question_to_sparql(question, llm='chatai'):
+def question_to_sparql(qsim, question, llm='chatai'):
 
     try:
+
+        similar_questions = question_similarity.identify_similar_questions(qsim, question)
+        similar_questions_pool = {}
+        if similar_questions:
+            for qid, qu, score, q_sparql, entities_in_sim_quest in similar_questions:
+                similar_questions_pool.update({'question':qu, 'entities': entities_in_sim_quest,'sparql':q_sparql})
+            # print(f"ID: {qid} | Score: {score:.3f} | Question: {question}")
         all_entities, selected_entities = entity_linker(question)
         if not all_entities and selected_entities:
             # print(f"{all_entities} \n {selected_entities}")
             all_entities = []
             selected_entities = []
-        prompt = get_question_to_sparql_prompt(question, selected_entities)
+        prompt = get_question_to_sparql_prompt(question, selected_entities, similar_questions_pool)
         # if llm == 'chatgpt':
         #     sparql = llms.chatgpt(prompt)
         #     return sparql['sparql']
@@ -141,5 +150,6 @@ if __name__ == '__main__':
     # print(result)
     # el = entity_linker(question)
     # print(el)
-    sparql = question_to_sparql(question)
+    qsim = question_similarity.QuestionSimilarityIdentifier()
+    sparql = question_to_sparql(qsim, question)
     print(sparql)
