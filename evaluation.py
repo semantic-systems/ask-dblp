@@ -15,41 +15,6 @@ LOCAL_SPARQL_ENDPOINT = Config.LOCAL_SPARQL_ENDPOINT
 DBLP_QUAD_1_SPARQL_ENDPOINT = Config.DBLP_QUAD_1_SPARQL_ENDPOINT
 SPARQL_ENDPOINT = LOCAL_SPARQL_ENDPOINT
 
-def truncate_answers(system_pred, gold):
-    """
-    Truncate answers in both system_pred and gold to the smaller length for each matching id.
-
-    Args:
-        system_pred (list of dict): Each dict has 'id' and 'answer' (list).
-        gold (list of dict): Same structure as system_pred.
-
-    Returns:
-        (modified_system_pred, modified_gold): lists with truncated answers.
-    """
-    # Convert gold and system_pred to dicts for quick lookup by id
-
-    gold_dict = {item['id']: item for item in gold}
-    sys_dict = {item['id']: item for item in system_pred}
-
-    modified_sys = []
-    modified_gold = []
-
-    for qid, sys_item in sys_dict.items():
-        if qid in gold_dict:
-            gold_item = gold_dict[qid]
-            sys_ans = sys_item.get('answer', [])
-            gold_ans = gold_item.get('answer', [])
-            # min_len = min(len(sys_ans), len(gold_ans))
-            min_len = len(gold_ans)
-            if len(sys_ans) < min_len:
-                min_len = len(sys_ans)
-            modified_sys.append({'id': qid, 'answer': sys_ans[:min_len]})
-            # modified_gold.append({'id': qid, 'answer': gold_ans[:min_len]})
-    utils.write_to_json(modified_sys, "experiment/ask-dblp/test_set_answer_predictions_id_answer_modified_new.json")
-    #utils.write_to_json(modified_sys,"experiment/DBLP-QuAD/answer_predictions_id_answer_modified_new.json")
-    # utils.write_to_json(modified_gold,"experiment/DBLP-QuAD/test/question_answer_pairs_modified.json")
-
-
 def random_split(data_path, test_ratio=0.2, seed=42):
     """
     Split data into test and train sets based on date.
