@@ -38,13 +38,10 @@ def question_checker():
        data = request.json
        user_query = data.get("query", "")
        validation_result = kgqa.question_checker(user_query)
-       completeness = feedback = ""
-       if 'completeness' in validation_result:
-           completeness = validation_result['completeness']
-       if 'feedback' in completeness:
-           feedback = validation_result['feedback']
+       completeness = validation_result['completeness']
+       feedback = validation_result['feedback']
        if completeness =='complete':
-           return jsonify({'completeness': True})
+           return jsonify({'completeness': True, 'feedback': feedback})
        else:
            return jsonify({'completeness': False, 'feedback': feedback})
    except Exception as e:

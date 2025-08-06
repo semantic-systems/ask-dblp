@@ -9,6 +9,56 @@ import dblp_schema
 import utils
 import re
 
+def parse_completness_check_result(raw_content):
+    result = {"completeness": None, "feedback": None}
+    try:
+        parsed = json.loads(raw_content)
+        if isinstance(parsed, dict):
+            result["completeness"] = parsed.get("completeness")
+            result["feedback"] = parsed.get("feedback")
+            return result
+    except json.JSONDecodeError:
+        pass
+
+    # Step 2: Regex fallback for malformed or escaped JSON-like strings
+    completeness_match = re.search(r'"completeness"\s*:\s*"([^"]+)"', raw_content)
+    feedback_match = re.search(r'"feedback"\s*:\s*"([^"]+)"', raw_content)
+
+    if completeness_match:
+        result["completeness"] = completeness_match.group(1).encode().decode("unicode_escape").strip()
+
+    if feedback_match:
+        result["feedback"] = feedback_match.group(1).encode().decode("unicode_escape").strip()
+
+    return result
+
+
+def extract_sparql(response_content):
+    """
+    Extracts a SPARQL query string from LLM output.
+    Attempts JSON parsing first, then falls back to regex-based extraction.
+    Args:
+        response_content (str): Raw LLM output string.
+    Returns:
+        str | None: The SPARQL query if found, else None.
+    """
+    try:
+        data = json.loads(response_content)
+        sparql = data.get("sparql")
+        if isinstance(sparql, str) and sparql.strip():
+            return sparql.strip()
+    except json.JSONDecodeError:
+        pass
+
+    # Regex fallback (extract string value of "sparql": "...")
+    match = re.search(r'"sparql"\s*:\s*"((?:[^"\\]|\\.)*)"', response_content)
+    if match:
+        sparql_raw = match.group(1)
+        return bytes(sparql_raw, "utf-8").decode("unicode_escape").strip()
+
+    return ""
+
+
 def clean_label(label, entity_type):
     if "Publication" in entity_type:
         # Remove everything before and including "et al.: "
@@ -110,15 +160,9 @@ def question_to_sparql(question, llm='chatai'):
             all_entities = []
             selected_entities = []
         prompt = get_question_to_sparql_prompt(question, selected_entities)
-        # if llm == 'chatgpt':
-        #     sparql = llms.chatgpt(prompt)
-        #     return sparql['sparql']
-        # sparql_result = llama(prompt)
         chatai_llm_model = 'qwen2.5-coder-32b-instruct'
         sparql_result, confidence = llms.chatai_models(prompt=prompt, model=chatai_llm_model)
-        sparql = ''
-        if 'sparql' in sparql_result:
-            sparql = sparql_result['sparql']
+        sparql = extract_sparql(sparql_result)
         return sparql, confidence, all_entities, selected_entities
     except Exception as e:
         logging.error(f"An error occurred during SPARQL Generation: {e}", exc_info=e)
@@ -129,10 +173,9 @@ def question_checker(question):
     question_checker_prompt_template = question_checker_prompt.QUESTION_VALIDATION_PROMPT
     qc_prompt = question_checker_prompt_template.format(question=question)
     chatai_llm_model = 'qwen2.5-coder-32b-instruct'
-    validation_result = llms.chatai_models(prompt=qc_prompt, model=chatai_llm_model, function_call_flag=2)
-    # print(validation_result)
-    # validation_result = llms.chatgpt(qc_prompt, 2)
-    return validation_result
+    validation_result, confidence_score = llms.chatai_models(prompt=qc_prompt, model=chatai_llm_model, function_call_flag=2)
+    parse_validation_result = parse_completness_check_result(validation_result)
+    return parse_validation_result
 
 
 if __name__ == '__main__':
