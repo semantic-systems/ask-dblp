@@ -33,5 +33,5 @@ npm run dev
 
 Then, you can now view the DBLP SPARQL generation app in your browser at `http://localhost:3000`.
 
-## DBLP QuAD 2.0 
+# DBLP QuAD 2.0 
 The training, dev, and test set of [DBLP-QuAD 2.0 is here](https://github.com/semantic-systems/dblp-quad-2-0/blob/main/README.md).
