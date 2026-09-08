@@ -1,5 +1,5 @@
 
-# ASK-DBLP: A natural language interface for DBLP KG.
+# [ASK-DBLP](https://ceur-ws.org/Vol-4085/paper76.pdf): A natural language interface for DBLP KG.
 This work is presented as a demo work at ISWC 2025, Nara, Japan. The paper can be found [here](https://ceur-ws.org/Vol-4085/paper76.pdf).
 ## How  to run
 
